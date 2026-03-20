@@ -2241,7 +2241,6 @@ let prestataires = JSON.parse(JSON.stringify(SAVED_PRESTATAIRES));
 
 // Fiches infos pratiques
 let infosFiches = [];
-let _savedInfosFiches = '[]';
 
 // Modifications des fiches copropriétaires (persisté dans le fichier)
 const SAVED_CONTACTS = /*SAVED_CONTACTS_START*/{}/*SAVED_CONTACTS_END*/;
@@ -4207,12 +4206,14 @@ function saveInfo() {
   }
   closeInfoModal();
   renderInfos();
+  updateTxCount();
 }
 
 function deleteInfo(id) {
   if (!confirm('Supprimer cette fiche ?')) return;
   infosFiches = infosFiches.filter(f => f._id !== id);
   renderInfos();
+  updateTxCount();
 }
 
 
@@ -4465,6 +4466,7 @@ function archiveCredit(id) {
   cr.actif = false;
   syncCreditCats();
   renderCredits();
+  updateTxCount();
   showToast('📦 Crédit archivé');
 }
 
@@ -4474,6 +4476,7 @@ function unarchiveCredit(id) {
   cr.actif = true;
   syncCreditCats();
   renderCredits();
+  updateTxCount();
   showToast('↺ Crédit désarchivé');
 }
 
@@ -5617,17 +5620,24 @@ function saveToFirebase() {
 function _afterSave(dataObj) {
   SAVED_CUSTOM_TX.length=0;
   (dataObj.customTx||[]).forEach(t=>SAVED_CUSTOM_TX.push(t));
-  _savedInfosFiches = JSON.stringify(infosFiches);
+  _savedStateSnapshot = _buildStateSnapshot();
   localStorage.setItem('copro_tx', JSON.stringify(customTx));
   updateTxCount();
   showSaveConfirm();
 }
 
+// ── Snapshot de l'état sauvegardé ────────────────────────────────
+let _savedStateSnapshot = '';
+
+function _buildStateSnapshot() {
+  return JSON.stringify({
+    customTx, lotSales, sdeaReadings, sdeaInvoices,
+    prestataires, contactOverrides, appSettings, credits, infosFiches
+  });
+}
+
 function hasUnsavedChanges() {
-  const ids = new Set(SAVED_CUSTOM_TX.map(t=>t._id));
-  const txChanged = customTx.some(t=>!ids.has(t._id)) || customTx.length!==SAVED_CUSTOM_TX.length;
-  const infosChanged = JSON.stringify(infosFiches) !== _savedInfosFiches;
-  return txChanged || infosChanged;
+  return _buildStateSnapshot() !== _savedStateSnapshot;
 }
 
 function _applyData(d) {
@@ -5646,8 +5656,8 @@ function _applyData(d) {
   if (d.contactOverrides) Object.assign(contactOverrides, d.contactOverrides);
   if (d.appSettings) Object.assign(appSettings, d.appSettings);
   if (typeof invalidateCache==='function') invalidateCache(2023);
-  // Snapshot de référence pour détecter les modifications
-  _savedInfosFiches = JSON.stringify(infosFiches);
+  // Snapshot de référence — état propre au chargement
+  _savedStateSnapshot = _buildStateSnapshot();
 }
 
 
@@ -5673,12 +5683,10 @@ function updateTxCount() {
   const yr = customTx.filter(t=>t.annee===currentYear).length;
   const el = document.getElementById('txCount');
   if(el) el.textContent = total > 0 ? `${yr} mouv. ${currentYear} · ${total} total` : '';
-  // Indique si des données non sauvegardées existent
-  const saved = SAVED_CUSTOM_TX.length;
   const statusEl = document.getElementById('saveStatus');
   if(statusEl) {
-    if(total > saved) {
-      statusEl.textContent = `⚠ ${total - saved} non sauvegardé(s)`;
+    if(hasUnsavedChanges()) {
+      statusEl.textContent = '⚠ Modifications non sauvegardées';
       statusEl.style.color = 'rgba(251,191,36,.8)';
     } else {
       statusEl.textContent = total > 0 ? '✓ Fichier à jour' : '';
@@ -5698,8 +5706,9 @@ document.addEventListener('DOMContentLoaded', function() {
   const pfEl = document.getElementById('param-fin');
   if (pdEl) pdEl.value = appSettings.exerciceDebut || '01/01';
   if (pfEl) pfEl.value = appSettings.exerciceFin   || '31/12';
+  // Observateur automatique — vérifie les modifications toutes les 3s
+  setInterval(updateTxCount, 3000);
   // Le chargement des données est géré par Firebase onAuthStateChanged ci-dessus
-  // L'overlay de connexion reste visible jusqu'à une authentification réussie
 });
 
 // Alerte fermeture si modifications non sauvegardées
