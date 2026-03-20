@@ -287,10 +287,46 @@ body.sidebar-open #sidebarOverlay { display: block; }
             font-weight:700;cursor:pointer;transition:background .15s">
             Se connecter
           </button>
-          <div style="margin-top:16px;font-size:12.5px;color:#6b7280">
+          <div style="margin-top:12px;font-size:12.5px;color:#6b7280">
+            <span onclick="showForgotPanel()" style="color:#2563eb;cursor:pointer;">
+              Mot de passe oublié ?
+            </span>
+          </div>
+          <div style="margin-top:8px;font-size:12.5px;color:#6b7280">
             Pas encore d'accès ?
             <span onclick="showRegisterPanel()" style="color:#2563eb;cursor:pointer;font-weight:600">
               Demander un accès
+            </span>
+          </div>
+        </div>
+
+        <!-- Panneau mot de passe oublié -->
+        <div id="forgotPanel" style="display:none">
+          <div style="font-size:13px;color:#6b7280;margin-bottom:20px;text-align:left">
+            Saisissez votre email — vous recevrez un lien pour définir un nouveau mot de passe.
+          </div>
+          <div id="forgotError" style="display:none;background:#fee2e2;color:#991b1b;
+            border:1px solid #fca5a5;border-radius:8px;padding:10px 14px;
+            font-size:13px;margin-bottom:16px;text-align:left"></div>
+          <div id="forgotSuccess" style="display:none;background:#dcfce7;color:#15803d;
+            border:1px solid #86efac;border-radius:8px;padding:10px 14px;
+            font-size:13px;margin-bottom:16px;text-align:left"></div>
+          <div style="text-align:left;margin-bottom:24px">
+            <label style="font-size:12px;font-weight:600;color:#6b7280;text-transform:uppercase;
+              letter-spacing:.4px;display:block;margin-bottom:4px">Email</label>
+            <input type="email" id="forgotEmail" placeholder="votre@email.com"
+              style="width:100%;padding:11px 14px;border:1px solid #e5e7eb;border-radius:8px;
+              font-size:14px;font-family:inherit;outline:none;box-sizing:border-box"
+              onkeydown="if(event.key==='Enter')doForgotPassword()">
+          </div>
+          <button id="forgotBtn" onclick="doForgotPassword()" style="width:100%;background:#1e3a5f;
+            color:#fff;border:none;padding:14px 24px;border-radius:10px;font-size:15px;
+            font-weight:700;cursor:pointer">
+            Envoyer le lien
+          </button>
+          <div style="margin-top:16px;font-size:12.5px;color:#6b7280">
+            <span onclick="showLoginPanel()" style="color:#2563eb;cursor:pointer;font-weight:600">
+              ← Retour à la connexion
             </span>
           </div>
         </div>
@@ -4984,11 +5020,56 @@ let _currentUserData = null;
 // ── Navigation entre les panneaux login / inscription ────────────
 function showRegisterPanel() {
   document.getElementById('loginPanel').style.display = 'none';
+  document.getElementById('forgotPanel').style.display = 'none';
   document.getElementById('registerPanel').style.display = 'block';
 }
 function showLoginPanel() {
   document.getElementById('registerPanel').style.display = 'none';
+  document.getElementById('forgotPanel').style.display = 'none';
   document.getElementById('loginPanel').style.display = 'block';
+}
+function showForgotPanel() {
+  document.getElementById('loginPanel').style.display = 'none';
+  document.getElementById('registerPanel').style.display = 'none';
+  document.getElementById('forgotPanel').style.display = 'block';
+  document.getElementById('forgotError').style.display = 'none';
+  document.getElementById('forgotSuccess').style.display = 'none';
+  document.getElementById('forgotEmail').value = '';
+}
+
+function doForgotPassword() {
+  const email = document.getElementById('forgotEmail').value.trim();
+  const errEl = document.getElementById('forgotError');
+  const sucEl = document.getElementById('forgotSuccess');
+  const btn   = document.getElementById('forgotBtn');
+
+  errEl.style.display = 'none';
+  sucEl.style.display = 'none';
+
+  if (!email) {
+    errEl.textContent = 'Veuillez saisir votre adresse email.';
+    errEl.style.display = 'block'; return;
+  }
+
+  btn.textContent = 'Envoi…'; btn.disabled = true;
+
+  _fbAuth.sendPasswordResetEmail(email)
+    .then(function() {
+      btn.textContent = 'Envoyer le lien'; btn.disabled = false;
+      sucEl.textContent = '✅ Email envoyé ! Vérifiez votre boîte de réception (et vos spams).';
+      sucEl.style.display = 'block';
+      document.getElementById('forgotEmail').value = '';
+    })
+    .catch(function(err) {
+      btn.textContent = 'Envoyer le lien'; btn.disabled = false;
+      const msgs = {
+        'auth/invalid-email':   'Adresse email invalide.',
+        'auth/user-not-found':  'Aucun compte associé à cet email.',
+        'auth/invalid-credential': 'Aucun compte associé à cet email.'
+      };
+      errEl.textContent = msgs[err.code] || ('Erreur : ' + err.message);
+      errEl.style.display = 'block';
+    });
 }
 
 // ── Inscription d'un nouvel utilisateur ─────────────────────────
