@@ -5098,14 +5098,19 @@ function applyRoleUI(role) {
       /* Mouvements : pas de modif ni suppression */
       button[onclick*="editTx"],
       button[onclick*="deleteTx"] { display: none !important; }
-      /* Crédits : pas de nouveau crédit ni édition */
-      button[onclick*="openCreditModal"] { display: none !important; }
-      /* Prestataires : pas d'ajout ni d'édition */
-      button[onclick*="openEditPresta"] { display: none !important; }
+      /* Crédits : pas de nouveau crédit, édition ni suppression */
+      button[onclick*="openCreditModal"],
+      button[onclick*="deleteCredit"] { display: none !important; }
+      /* Prestataires : pas d'ajout, d'édition ni de suppression */
+      button[onclick*="openEditPresta"],
+      button[onclick*="deletePresta"] { display: none !important; }
       /* Copropriétaires : pas de modification de fiche */
       button[onclick*="openEditContact"] { display: none !important; }
-      /* SDEA : masquer l'onglet saisie */
+      /* SDEA : masquer l'onglet saisie et le formulaire de facture */
       #sdea-tab-saisie { display: none !important; }
+      #sdea-factures .card:first-child { display: none !important; }
+      button[onclick*="saveInvoice"],
+      button[onclick*="deleteInvoice"] { display: none !important; }
       /* Cessions : masquer le formulaire d'enregistrement */
       #page-cessions .grid-2 > .card:first-child { display: none !important; }
     `;
