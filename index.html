@@ -5063,6 +5063,11 @@ function loadUserRole(uid) {
         _showLoginError('Votre demande d\'accès est en cours de validation. Merci de patienter.');
         return null;
       }
+      if (data.role === 'blocked') {
+        _fbAuth.signOut();
+        _showLoginError('Votre accès a été désactivé. Contactez l\'administrateur.');
+        return null;
+      }
       _currentUserRole = data.role;
       _currentUserData = data;
       return data.role;
@@ -5106,7 +5111,8 @@ function loadUsersForAdmin() {
 
     const entries = Object.entries(users);
     const pending = entries.filter(([,u]) => u.role === 'pending');
-    const others  = entries.filter(([,u]) => u.role !== 'pending');
+    const active  = entries.filter(([,u]) => u.role === 'admin' || u.role === 'reader');
+    const blocked = entries.filter(([,u]) => u.role === 'blocked');
 
     // Badge notification
     const badge = document.getElementById('pendingBadge');
@@ -5118,18 +5124,21 @@ function loadUsersForAdmin() {
       html += `<div style="font-size:12px;font-weight:700;color:#92400e;text-transform:uppercase;
         letter-spacing:.4px;margin-bottom:8px;padding:8px 12px;background:#fef3c7;
         border-radius:6px">⏳ ${pending.length} demande(s) en attente</div>`;
-      pending.forEach(([uid, u]) => {
-        html += _userRow(uid, u, true);
-      });
+      pending.forEach(([uid, u]) => { html += _userRow(uid, u); });
       html += '<div style="border-top:1px solid var(--border);margin:16px 0"></div>';
     }
 
-    if (others.length > 0) {
+    if (active.length > 0) {
       html += `<div style="font-size:12px;font-weight:600;color:var(--text-2);
         text-transform:uppercase;letter-spacing:.4px;margin-bottom:8px">Utilisateurs actifs</div>`;
-      others.forEach(([uid, u]) => {
-        html += _userRow(uid, u, false);
-      });
+      active.forEach(([uid, u]) => { html += _userRow(uid, u); });
+    }
+
+    if (blocked.length > 0) {
+      html += '<div style="border-top:1px solid var(--border);margin:16px 0"></div>';
+      html += `<div style="font-size:12px;font-weight:600;color:var(--text-2);
+        text-transform:uppercase;letter-spacing:.4px;margin-bottom:8px">Accès bloqués</div>`;
+      blocked.forEach(([uid, u]) => { html += _userRow(uid, u); });
     }
 
     if (entries.length === 0) {
@@ -5140,23 +5149,30 @@ function loadUsersForAdmin() {
   });
 }
 
-function _userRow(uid, u, isPending) {
-  const roleLabel = {admin:'Admin', reader:'Lecture', pending:'En attente'}[u.role] || u.role;
+function _userRow(uid, u) {
+  const roleLabel = {admin:'Admin', reader:'Lecture', pending:'En attente', blocked:'Bloqué'}[u.role] || u.role;
   const roleBadge = {
     admin:   'badge-blue',
     reader:  'badge-green',
-    pending: 'badge-amber'
+    pending: 'badge-amber',
+    blocked: 'badge-red'
   }[u.role] || 'badge-gray';
 
-  const actions = isPending
-    ? `<button class="btn btn-sm" style="background:#16a34a;color:#fff;border:none"
+  let actions = '';
+  if (u.role === 'pending') {
+    actions = `<button class="btn btn-sm" style="background:#16a34a;color:#fff;border:none"
         onclick="setUserRole('${uid}','reader')">✓ Valider</button>
        <button class="btn btn-outline btn-sm" style="color:#dc2626;margin-left:4px"
-        onclick="deleteUser('${uid}')">✕ Refuser</button>`
-    : (u.role !== 'admin'
-        ? `<button class="btn btn-outline btn-sm" style="color:#dc2626"
-            onclick="deleteUser('${uid}')">Supprimer</button>`
-        : '<span style="font-size:11px;color:var(--text-3)">Vous</span>');
+        onclick="deleteUser('${uid}')">✕ Refuser</button>`;
+  } else if (u.role === 'blocked') {
+    actions = `<button class="btn btn-outline btn-sm" style="color:#16a34a"
+        onclick="setUserRole('${uid}','reader')">↺ Réactiver</button>`;
+  } else if (u.role === 'reader') {
+    actions = `<button class="btn btn-outline btn-sm" style="color:#dc2626"
+        onclick="deleteUser('${uid}')">Bloquer</button>`;
+  } else if (u.role === 'admin') {
+    actions = '<span style="font-size:11px;color:var(--text-3)">Vous</span>';
+  }
 
   return `<div style="display:flex;align-items:center;justify-content:space-between;
     padding:10px 0;border-bottom:1px solid #f3f4f6;gap:8px;flex-wrap:wrap">
@@ -5174,18 +5190,15 @@ function _userRow(uid, u, isPending) {
 function setUserRole(uid, role) {
   _fbDB.ref('copro/users/' + uid + '/role').set(role)
     .then(function() {
-      showToast('✅ Accès accordé');
+      const msgs = { reader: '✅ Accès accordé', blocked: '🚫 Utilisateur bloqué', pending: '⏳ Remis en attente' };
+      showToast(msgs[role] || '✅ Rôle mis à jour');
       loadUsersForAdmin();
     });
 }
 
 function deleteUser(uid) {
-  if (!confirm('Supprimer cet utilisateur ?')) return;
-  _fbDB.ref('copro/users/' + uid).remove()
-    .then(function() {
-      showToast('✅ Utilisateur supprimé');
-      loadUsersForAdmin();
-    });
+  if (!confirm('Bloquer cet utilisateur ? Il ne pourra plus se connecter. Vous pourrez le réactiver à tout moment.')) return;
+  setUserRole(uid, 'blocked');
 }
 
 // ── Vérification des demandes en attente au chargement ──────────
