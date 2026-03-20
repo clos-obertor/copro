@@ -1,7 +1,7 @@
 <html lang="fr"><head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Copropriété — Comptabilité</title>
+<title>Clos de la Tour Obertor — Comptabilité</title>
 <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&amp;family=DM+Mono:wght@400;500&amp;display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <!-- Firebase SDK -->
@@ -28,6 +28,7 @@
 </script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
+html{overflow-x:hidden;max-width:100vw;}
 :root{
   --bg:#f4f5f7;--surface:#ffffff;--sidebar:#1a2235;--sidebar-hover:#253050;
   --accent:#2563eb;--accent-light:#dbeafe;--green:#16a34a;--green-light:#dcfce7;
@@ -36,8 +37,8 @@
   --shadow:0 1px 3px rgba(0,0,0,.08);--shadow-md:0 4px 6px rgba(0,0,0,.07);
   --shadow-lg:0 10px 15px rgba(0,0,0,.08);--fr-color:#7c3aed;
 }
-body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);display:flex;min-height:100vh;font-size:14px;overflow-x:hidden}
-.sidebar{width:220px;min-height:100vh;background:var(--sidebar);position:fixed;top:0;left:0;z-index:100;display:flex;flex-direction:column}
+body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);display:flex;min-height:100vh;font-size:14px;overflow-x:hidden;max-width:100vw;}
+.sidebar{width:220px;height:100vh;height:100dvh;background:var(--sidebar);position:fixed;top:0;left:0;z-index:100;display:flex;flex-direction:column;overflow-y:auto;overflow-x:hidden;}
 .sidebar-logo{padding:20px 20px 16px;border-bottom:1px solid rgba(255,255,255,.08)}
 .sidebar-logo h1{font-size:15px;font-weight:700;color:#fff}
 .sidebar-logo p{font-size:11px;color:rgba(255,255,255,.4);margin-top:2px}
@@ -50,13 +51,16 @@ nav{flex:1;padding:8px 0}
 .nav-item:hover{background:var(--sidebar-hover);color:rgba(255,255,255,.9)}
 .nav-item.active{background:rgba(37,99,235,.15);color:#fff;border-left-color:var(--accent)}
 .nav-item .icon{width:18px;text-align:center;font-size:15px}
-.sidebar-footer{padding:14px 18px;border-top:1px solid rgba(255,255,255,.08);font-size:11px;color:rgba(255,255,255,.3);line-height:1.5}
-.main{margin-left:220px;flex:1;display:flex;flex-direction:column;min-width:0;overflow-x:hidden}
-.topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 28px;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;box-shadow:var(--shadow)}
+.sidebar-footer{padding:14px 18px;border-top:1px solid rgba(255,255,255,.08);font-size:11px;color:rgba(255,255,255,.3);line-height:1.5;flex-shrink:0;}
+.sidebar-logout{display:block;}
+.main{margin-left:220px;flex:1;display:flex;flex-direction:column;min-width:0;}
+.topbar{background:var(--surface);border-bottom:1px solid var(--border);padding:0 28px;height:56px;display:flex;align-items:center;justify-content:space-between;position:fixed;top:0;left:220px;right:0;z-index:999;box-shadow:var(--shadow);}
 .topbar-title{font-size:16px;font-weight:600}
 .topbar-sub{font-size:12px;color:var(--text-2);margin-top:1px}
-.topbar-actions{display:flex;gap:8px}
-.content{padding:24px 28px;flex:1}
+.topbar-actions{display:flex;gap:8px;flex-shrink:0;}
+.content{padding:24px 28px;flex:1;overflow-x:hidden;padding-top:80px;}
+.card{background:var(--surface);border-radius:12px;padding:20px;box-shadow:var(--shadow);border:1px solid var(--border);min-width:0;}
+.card-table{overflow-x:auto;-webkit-overflow-scrolling:touch;}
 .card{background:var(--surface);border-radius:12px;padding:20px;box-shadow:var(--shadow);border:1px solid var(--border);min-width:0;overflow:hidden}
 .card-sm{padding:16px}
 .card-title{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--text-2);margin-bottom:12px}
@@ -117,12 +121,13 @@ input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent)}
 .lot-num{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text-3);margin-bottom:4px}
 .lot-name{font-size:14px;font-weight:700;margin-bottom:8px}
 .lot-alert{position:absolute;top:10px;right:10px;font-size:14px}
-.alert-box{padding:10px 14px;border-radius:8px;font-size:12.5px;margin-bottom:14px;display:flex;align-items:center;gap:8px;border:1px solid}
+.alert-box{padding:10px 14px;border-radius:8px;font-size:12.5px;margin-bottom:14px;display:flex;align-items:flex-start;gap:8px;border:1px solid;width:100%;box-sizing:border-box;overflow-wrap:break-word;}
 .alert-warn{background:var(--amber-light);color:#92400e;border-color:#fcd34d}
 .alert-danger{background:var(--red-light);color:#991b1b;border-color:#fca5a5}
-.fr-legend{display:flex;align-items:center;gap:16px;padding:8px 12px;background:#faf5ff;border:1px solid #e9d5ff;border-radius:8px;font-size:12px;margin-bottom:16px}
+.fr-legend{display:flex;align-items:center;gap:8px;padding:8px 12px;background:#faf5ff;border:1px solid #e9d5ff;border-radius:8px;font-size:12px;margin-bottom:16px;flex-wrap:wrap;width:100%;box-sizing:border-box;}
 .fr-legend span{font-weight:600;color:var(--fr-color)}
-.info-banner{padding:10px 14px;border-radius:8px;background:var(--accent-light);border:1px solid #bfdbfe;font-size:12.5px;color:#1d4ed8;margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.info-banner{padding:10px 14px;border-radius:8px;background:var(--accent-light);border:1px solid #bfdbfe;font-size:12.5px;color:#1d4ed8;margin-bottom:16px;display:flex;align-items:flex-start;gap:8px;width:100%;box-sizing:border-box;overflow-wrap:break-word;}
+.info-banner strong{white-space:nowrap;}
 .chart-wrap{position:relative;height:220px;overflow:hidden;width:100%;min-width:0}
 .section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
 .section-header h2{font-size:16px;font-weight:700}
@@ -162,7 +167,7 @@ body.sidebar-open #sidebarOverlay { display: block; }
   .sidebar {
     transform: translateX(-100%);
     transition: transform .28s cubic-bezier(.4,0,.2,1);
-    z-index: 200 !important;
+    z-index: 1001 !important;
   }
   body.sidebar-open .sidebar {
     transform: translateX(0);
@@ -170,9 +175,10 @@ body.sidebar-open #sidebarOverlay { display: block; }
   }
   body.sidebar-open #sidebarCloseBtn { display: flex !important; }
   .main { margin-left: 0 !important; width: 100% !important; max-width: 100vw !important; min-width: 0 !important; }
+  .topbar { left: 0 !important; padding: 10px 20px !important; gap: 12px; }
   .hamburger { display: flex !important; }
-  .topbar { padding: 10px 20px !important; gap: 12px; }
   .page { padding: 20px 16px !important; }
+  .card { overflow: visible !important; }
 }
 
 /* ── Tablette large 900-1400px ──────────────────────────────── */
@@ -223,7 +229,20 @@ body.sidebar-open #sidebarOverlay { display: block; }
   .topbar-title { font-size: 14px !important; }
   .topbar-actions .btn { padding: 5px 8px !important; font-size: 11px !important; }
   .chart-wrap canvas { height: 180px !important; }
-  #recentTx tr td:nth-child(2), #recentTx tr th:nth-child(2) { display: none; }
+  .btn-logout-top { display: none !important; }
+  /* Tableau derniers mouvements : taille réduite pour tenir sur mobile */
+  #recentTx td, #recentTx th { 
+    font-size: 11px !important; 
+    padding: 7px 5px !important;
+    white-space: nowrap;
+  }
+  #recentTx .badge { font-size: 10px !important; padding: 2px 5px !important; }
+  #recentTx .num { font-size: 11px !important; }
+  /* Projection charges : 2 colonnes */
+  #dashProjN1 [style*="grid-template-columns:repeat(4"],
+  #dashProjN1 [style*="grid-template-columns: repeat(4"] {
+    grid-template-columns: repeat(2,1fr) !important;
+  }
 }
 
 </style>
@@ -238,51 +257,123 @@ body.sidebar-open #sidebarOverlay { display: block; }
         width:100%;text-align:center;box-shadow:0 24px 80px rgba(0,0,0,.5)">
         <div style="font-size:48px;margin-bottom:12px">🏢</div>
         <div style="font-size:20px;font-weight:700;color:#1e3a5f;margin-bottom:4px">
-          Copropriété — Comptabilité</div>
+          Clos de la Tour Obertor</div>
+        <div style="font-size:15px;font-weight:500;color:#374151;margin-bottom:4px">Comptabilité</div>
         <div style="font-size:12.5px;color:#9ca3af;margin-bottom:28px">Boersch · 8 lots</div>
 
-        <!-- Message d'erreur -->
-        <div id="loginError" style="display:none;background:#fee2e2;color:#991b1b;
-          border:1px solid #fca5a5;border-radius:8px;padding:10px 14px;
-          font-size:13px;margin-bottom:16px;text-align:left"></div>
-
-        <!-- Formulaire -->
-        <div style="text-align:left;margin-bottom:16px">
-          <label style="font-size:12px;font-weight:600;color:#6b7280;
-            text-transform:uppercase;letter-spacing:.4px;display:block;margin-bottom:4px">
-            Email
-          </label>
-          <input type="email" id="loginEmail" placeholder="votre@email.com"
-            style="width:100%;padding:11px 14px;border:1px solid #e5e7eb;border-radius:8px;
-            font-size:14px;font-family:inherit;outline:none;box-sizing:border-box"
-            onkeydown="if(event.key==='Enter')doLogin()">
+        <!-- Panneau connexion -->
+        <div id="loginPanel">
+          <div id="loginError" style="display:none;background:#fee2e2;color:#991b1b;
+            border:1px solid #fca5a5;border-radius:8px;padding:10px 14px;
+            font-size:13px;margin-bottom:16px;text-align:left"></div>
+          <div style="text-align:left;margin-bottom:16px">
+            <label style="font-size:12px;font-weight:600;color:#6b7280;
+              text-transform:uppercase;letter-spacing:.4px;display:block;margin-bottom:4px">Email</label>
+            <input type="email" id="loginEmail" placeholder="votre@email.com"
+              style="width:100%;padding:11px 14px;border:1px solid #e5e7eb;border-radius:8px;
+              font-size:14px;font-family:inherit;outline:none;box-sizing:border-box"
+              onkeydown="if(event.key==='Enter')doLogin()">
+          </div>
+          <div style="text-align:left;margin-bottom:24px">
+            <label style="font-size:12px;font-weight:600;color:#6b7280;
+              text-transform:uppercase;letter-spacing:.4px;display:block;margin-bottom:4px">Mot de passe</label>
+            <input type="password" id="loginPassword" placeholder="••••••••"
+              style="width:100%;padding:11px 14px;border:1px solid #e5e7eb;border-radius:8px;
+              font-size:14px;font-family:inherit;outline:none;box-sizing:border-box"
+              onkeydown="if(event.key==='Enter')doLogin()">
+          </div>
+          <button id="loginBtn" onclick="doLogin()" style="width:100%;background:#1e3a5f;
+            color:#fff;border:none;padding:14px 24px;border-radius:10px;font-size:15px;
+            font-weight:700;cursor:pointer;transition:background .15s">
+            Se connecter
+          </button>
+          <div style="margin-top:16px;font-size:12.5px;color:#6b7280">
+            Pas encore d'accès ?
+            <span onclick="showRegisterPanel()" style="color:#2563eb;cursor:pointer;font-weight:600">
+              Demander un accès
+            </span>
+          </div>
         </div>
-        <div style="text-align:left;margin-bottom:24px">
-          <label style="font-size:12px;font-weight:600;color:#6b7280;
-            text-transform:uppercase;letter-spacing:.4px;display:block;margin-bottom:4px">
-            Mot de passe
-          </label>
-          <input type="password" id="loginPassword" placeholder="••••••••"
-            style="width:100%;padding:11px 14px;border:1px solid #e5e7eb;border-radius:8px;
-            font-size:14px;font-family:inherit;outline:none;box-sizing:border-box"
-            onkeydown="if(event.key==='Enter')doLogin()">
+
+        <!-- Panneau inscription -->
+        <div id="registerPanel" style="display:none">
+          <div style="font-size:13px;color:#6b7280;margin-bottom:20px;text-align:left;
+            background:#f0f9ff;border:1px solid #bae6fd;border-radius:8px;padding:10px 14px">
+            ℹ️ Votre demande sera examinée par l'administrateur avant activation.
+          </div>
+          <div id="registerError" style="display:none;background:#fee2e2;color:#991b1b;
+            border:1px solid #fca5a5;border-radius:8px;padding:10px 14px;
+            font-size:13px;margin-bottom:16px;text-align:left"></div>
+          <div id="registerSuccess" style="display:none;background:#dcfce7;color:#15803d;
+            border:1px solid #86efac;border-radius:8px;padding:10px 14px;
+            font-size:13px;margin-bottom:16px;text-align:left"></div>
+          <div style="text-align:left;margin-bottom:12px">
+            <label style="font-size:12px;font-weight:600;color:#6b7280;text-transform:uppercase;
+              letter-spacing:.4px;display:block;margin-bottom:4px">Nom (tel qu'il apparaît sur le règlement)</label>
+            <input type="text" id="regNom" placeholder="ex: SCHAEFFER"
+              style="width:100%;padding:11px 14px;border:1px solid #e5e7eb;border-radius:8px;
+              font-size:14px;font-family:inherit;outline:none;box-sizing:border-box">
+          </div>
+          <div style="text-align:left;margin-bottom:12px">
+            <label style="font-size:12px;font-weight:600;color:#6b7280;text-transform:uppercase;
+              letter-spacing:.4px;display:block;margin-bottom:4px">Votre lot</label>
+            <select id="regLot" style="width:100%;padding:11px 14px;border:1px solid #e5e7eb;
+              border-radius:8px;font-size:14px;font-family:inherit;outline:none;box-sizing:border-box">
+              <option value="">— Sélectionner —</option>
+              <option value="Lot 1">Lot 1</option><option value="Lot 2">Lot 2</option>
+              <option value="Lot 3">Lot 3</option><option value="Lot 4">Lot 4</option>
+              <option value="Lot 5">Lot 5</option><option value="Lot 6">Lot 6</option>
+              <option value="Lot 7">Lot 7</option><option value="Lot 8">Lot 8</option>
+            </select>
+          </div>
+          <div style="text-align:left;margin-bottom:12px">
+            <label style="font-size:12px;font-weight:600;color:#6b7280;text-transform:uppercase;
+              letter-spacing:.4px;display:block;margin-bottom:4px">Email</label>
+            <input type="email" id="regEmail" placeholder="votre@email.com"
+              style="width:100%;padding:11px 14px;border:1px solid #e5e7eb;border-radius:8px;
+              font-size:14px;font-family:inherit;outline:none;box-sizing:border-box">
+          </div>
+          <div style="text-align:left;margin-bottom:24px">
+            <label style="font-size:12px;font-weight:600;color:#6b7280;text-transform:uppercase;
+              letter-spacing:.4px;display:block;margin-bottom:4px">Mot de passe</label>
+            <input type="password" id="regPassword" placeholder="8 caractères minimum"
+              style="width:100%;padding:11px 14px;border:1px solid #e5e7eb;border-radius:8px;
+              font-size:14px;font-family:inherit;outline:none;box-sizing:border-box">
+          </div>
+          <button id="regBtn" onclick="doRegister()" style="width:100%;background:#2563eb;
+            color:#fff;border:none;padding:14px 24px;border-radius:10px;font-size:15px;
+            font-weight:700;cursor:pointer">
+            Envoyer la demande
+          </button>
+          <div style="margin-top:16px;font-size:12.5px;color:#6b7280">
+            <span onclick="showLoginPanel()" style="color:#2563eb;cursor:pointer;font-weight:600">
+              ← Retour à la connexion
+            </span>
+          </div>
         </div>
 
-        <button id="loginBtn" onclick="doLogin()" style="width:100%;background:#1e3a5f;
-          color:#fff;border:none;padding:14px 24px;border-radius:10px;font-size:15px;
-          font-weight:700;cursor:pointer;transition:background .15s">
-          Se connecter
-        </button>
         <div style="font-size:11px;color:#9ca3af;margin-top:16px">
           Accès sécurisé · Données stockées sur Firebase
         </div>
+        <div id="jsError" style="display:none;margin-top:12px;background:#fee2e2;
+          color:#991b1b;border:1px solid #fca5a5;border-radius:8px;padding:10px 14px;
+          font-size:11px;text-align:left;word-break:break-all"></div>
       </div>
     </div>
+    <script>
+      window.onerror = function(msg, src, line, col, err) {
+        const el = document.getElementById('jsError');
+        if (el) {
+          el.style.display = 'block';
+          el.textContent = '⚠️ Erreur JS : ' + msg + ' (ligne ' + line + ')';
+        }
+      };
+    </script>
 
 
 <div class="sidebar">
   <div class="sidebar-logo" style="position:relative">
-    <h1>🏢 Copropriété</h1>
+    <h1>🏢 Clos de la Tour Obertor</h1>
     <p>Boersch — 8 lots</p>
     <button id="sidebarCloseBtn" onclick="closeSidebar()" style="display:none;position:absolute;top:14px;right:14px;
              width:28px;height:28px;border-radius:50%;border:none;
@@ -308,12 +399,20 @@ body.sidebar-open #sidebarOverlay { display: block; }
     <div class="nav-item" onclick="showPage('copros')" id="nav-copros"><span class="icon">👥</span> Copropriétaires</div>
     <div class="nav-item" onclick="showPage('presta')" id="nav-presta"><span class="icon">🔧</span> Prestataires</div>
     <div class="nav-item" onclick="showPage('cessions')" id="nav-cessions"><span class="icon">🔄</span> Cessions de lots</div>
-    <div class="nav-item" onclick="showPage('parametres')" id="nav-parametres"><span class="icon">⚙️</span> Paramètres</div>
+    <div class="nav-item" onclick="showPage('parametres')" id="nav-parametres"><span class="icon">⚙️</span> Paramètres <span id="pendingBadge" style="display:none;background:#dc2626;color:#fff;border-radius:999px;font-size:10px;font-weight:700;padding:1px 6px;margin-left:4px">!</span></div>
   </nav>
   <div class="sidebar-footer">
     Données 2023–2025 importées<br>
     <span id="txCount" style="color:rgba(255,255,255,.5)">22 mouv. 2026 · 23 total</span><br>
     <span id="saveStatus" style="color: rgba(255, 255, 255, 0.35); font-size: 10.5px;">✓ Fichier à jour</span>
+    <button onclick="doLogout()" class="sidebar-logout" style="margin-top:10px;width:100%;padding:7px 10px;
+      background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);
+      border-radius:6px;color:rgba(255,255,255,.55);font-size:12px;font-family:inherit;
+      cursor:pointer;transition:all .15s"
+      onmouseover="this.style.background='rgba(220,38,38,.3)';this.style.color='#fff'"
+      onmouseout="this.style.background='rgba(255,255,255,.08)';this.style.color='rgba(255,255,255,.55)'">
+      ⎋ Se déconnecter
+    </button>
   </div>
 </div>
 
@@ -397,6 +496,7 @@ body.sidebar-open #sidebarOverlay { display: block; }
       <div class="grid-2">
         <div class="card">
           <div class="card-title">Derniers mouvements</div>
+          <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;">
           <table><thead><tr><th>Date</th><th>Lot</th><th>Catégorie</th><th class="text-right">Compta</th></tr></thead>
           <tbody id="recentTx">
     <tr>
@@ -447,6 +547,7 @@ body.sidebar-open #sidebarOverlay { display: block; }
       <td><span class="badge badge-blue">Charges</span></td>
       <td class="text-right"><span class="num num-pos">240,00 €</span></td>
     </tr></tbody></table>
+          </div><!-- end scroll wrapper -->
         </div>
         <div class="card">
           <div class="card-title">État des lots — exercice <span id="dashYear">2026</span></div>
@@ -1784,6 +1885,12 @@ body.sidebar-open #sidebarOverlay { display: block; }
           Les catégories système (Récupération Solde, → Fond de Travaux, → Compte Courant) ne peuvent pas être supprimées.
         </div>
         <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:20px" id="param-cats-grid"></div>
+      </div>
+
+      <!-- Copropriétaires enregistrés (admin uniquement) -->
+      <div class="card" id="param-users-card" style="margin-top:20px;display:none">
+        <div class="card-title">👥 Copropriétaires enregistrés</div>
+        <div id="param-users-list" style="margin-top:4px"></div>
       </div>
 
     </div>
@@ -4868,10 +4975,249 @@ function saveTransaction() {
 }
 
 // ══════════════════════════════════════════════════════════════════
-//  FIREBASE — Authentification & Lecture / Écriture des données
+//  GESTION DES RÔLES & MULTI-UTILISATEURS
 // ══════════════════════════════════════════════════════════════════
 
+let _currentUserRole = null;
+let _currentUserData = null;
+
+// ── Navigation entre les panneaux login / inscription ────────────
+function showRegisterPanel() {
+  document.getElementById('loginPanel').style.display = 'none';
+  document.getElementById('registerPanel').style.display = 'block';
+}
+function showLoginPanel() {
+  document.getElementById('registerPanel').style.display = 'none';
+  document.getElementById('loginPanel').style.display = 'block';
+}
+
+// ── Inscription d'un nouvel utilisateur ─────────────────────────
+function doRegister() {
+  const nom      = document.getElementById('regNom').value.trim().toUpperCase();
+  const lot      = document.getElementById('regLot').value;
+  const email    = document.getElementById('regEmail').value.trim();
+  const password = document.getElementById('regPassword').value;
+  const errEl    = document.getElementById('registerError');
+  const sucEl    = document.getElementById('registerSuccess');
+  const btn      = document.getElementById('regBtn');
+
+  errEl.style.display = 'none';
+  sucEl.style.display = 'none';
+
+  if (!nom || !lot || !email || !password) {
+    errEl.textContent = 'Veuillez remplir tous les champs.';
+    errEl.style.display = 'block'; return;
+  }
+  if (password.length < 8) {
+    errEl.textContent = 'Le mot de passe doit faire au moins 8 caractères.';
+    errEl.style.display = 'block'; return;
+  }
+
+  btn.textContent = 'Envoi…'; btn.disabled = true;
+
+  _fbAuth.createUserWithEmailAndPassword(email, password)
+    .then(function(cred) {
+      const uid = cred.user.uid;
+      return _fbDB.ref('copro/users/' + uid).set({
+        email, nom, lot,
+        role: 'pending',
+        createdAt: new Date().toISOString().slice(0,10)
+      });
+    })
+    .then(function() {
+      btn.textContent = 'Envoyer la demande'; btn.disabled = false;
+      sucEl.textContent = '✅ Demande envoyée ! L\'administrateur vous notifiera lors de l\'activation de votre accès.';
+      sucEl.style.display = 'block';
+      document.getElementById('regNom').value = '';
+      document.getElementById('regLot').value = '';
+      document.getElementById('regEmail').value = '';
+      document.getElementById('regPassword').value = '';
+      // Déconnecter immédiatement — accès pending
+      _fbAuth.signOut();
+    })
+    .catch(function(err) {
+      btn.textContent = 'Envoyer la demande'; btn.disabled = false;
+      const msgs = {
+        'auth/email-already-in-use': 'Cet email est déjà utilisé.',
+        'auth/invalid-email':        'Adresse email invalide.',
+        'auth/weak-password':        'Mot de passe trop faible (8 caractères minimum).'
+      };
+      errEl.textContent = msgs[err.code] || ('Erreur : ' + err.message);
+      errEl.style.display = 'block';
+    });
+}
+
+// ── Chargement du rôle après connexion ──────────────────────────
+function loadUserRole(uid) {
+  return _fbDB.ref('copro/users/' + uid).once('value')
+    .then(function(snap) {
+      const data = snap.val();
+      if (!data) {
+        // Utilisateur sans fiche → accès refusé
+        _fbAuth.signOut();
+        _showLoginError('Votre compte n\'est pas encore activé. Contactez l\'administrateur.');
+        return null;
+      }
+      if (data.role === 'pending') {
+        _fbAuth.signOut();
+        _showLoginError('Votre demande d\'accès est en cours de validation. Merci de patienter.');
+        return null;
+      }
+      _currentUserRole = data.role;
+      _currentUserData = data;
+      return data.role;
+    });
+}
+
+// ── Adaptation de l'interface selon le rôle ─────────────────────
+function applyRoleUI(role) {
+  const isAdmin = role === 'admin';
+  const isReader = role === 'reader';
+
+  // Reader : masquer tous les boutons d'écriture
+  if (isReader) {
+    const writeEls = document.querySelectorAll(
+      '#saveBtn, .btn-primary[onclick*="openModal"], .btn-primary[onclick*="saveCredit"], ' +
+      '.btn-primary[onclick*="saveCession"], .btn-primary[onclick*="openEditPresta"], ' +
+      '.btn-primary[onclick*="saveExercice"], .btn-primary[onclick*="addCat"]'
+    );
+    writeEls.forEach(el => el.style.display = 'none');
+    // Masquer le bouton + Mouvement de la topbar
+    const mvBtn = document.querySelector('.btn-primary[onclick="openModal()"]');
+    if (mvBtn) mvBtn.style.display = 'none';
+    // Bandeau info
+    showToast('👁 Accès en lecture seule');
+  }
+
+  // Admin uniquement : afficher section utilisateurs dans Paramètres
+  if (isAdmin) {
+    const card = document.getElementById('param-users-card');
+    if (card) card.style.display = 'block';
+    loadUsersForAdmin();
+  }
+}
+
+// ── Chargement et affichage des utilisateurs (admin) ────────────
+function loadUsersForAdmin() {
+  _fbDB.ref('copro/users').once('value').then(function(snap) {
+    const users = snap.val() || {};
+    const list  = document.getElementById('param-users-list');
+    if (!list) return;
+
+    const entries = Object.entries(users);
+    const pending = entries.filter(([,u]) => u.role === 'pending');
+    const others  = entries.filter(([,u]) => u.role !== 'pending');
+
+    // Badge notification
+    const badge = document.getElementById('pendingBadge');
+    if (badge) badge.style.display = pending.length > 0 ? 'inline' : 'none';
+
+    let html = '';
+
+    if (pending.length > 0) {
+      html += `<div style="font-size:12px;font-weight:700;color:#92400e;text-transform:uppercase;
+        letter-spacing:.4px;margin-bottom:8px;padding:8px 12px;background:#fef3c7;
+        border-radius:6px">⏳ ${pending.length} demande(s) en attente</div>`;
+      pending.forEach(([uid, u]) => {
+        html += _userRow(uid, u, true);
+      });
+      html += '<div style="border-top:1px solid var(--border);margin:16px 0"></div>';
+    }
+
+    if (others.length > 0) {
+      html += `<div style="font-size:12px;font-weight:600;color:var(--text-2);
+        text-transform:uppercase;letter-spacing:.4px;margin-bottom:8px">Utilisateurs actifs</div>`;
+      others.forEach(([uid, u]) => {
+        html += _userRow(uid, u, false);
+      });
+    }
+
+    if (entries.length === 0) {
+      html = '<div style="color:var(--text-3);font-size:13px;padding:12px 0">Aucun utilisateur enregistré.</div>';
+    }
+
+    list.innerHTML = html;
+  });
+}
+
+function _userRow(uid, u, isPending) {
+  const roleLabel = {admin:'Admin', reader:'Lecture', pending:'En attente'}[u.role] || u.role;
+  const roleBadge = {
+    admin:   'badge-blue',
+    reader:  'badge-green',
+    pending: 'badge-amber'
+  }[u.role] || 'badge-gray';
+
+  const actions = isPending
+    ? `<button class="btn btn-sm" style="background:#16a34a;color:#fff;border:none"
+        onclick="setUserRole('${uid}','reader')">✓ Valider</button>
+       <button class="btn btn-outline btn-sm" style="color:#dc2626;margin-left:4px"
+        onclick="deleteUser('${uid}')">✕ Refuser</button>`
+    : (u.role !== 'admin'
+        ? `<button class="btn btn-outline btn-sm" style="color:#dc2626"
+            onclick="deleteUser('${uid}')">Supprimer</button>`
+        : '<span style="font-size:11px;color:var(--text-3)">Vous</span>');
+
+  return `<div style="display:flex;align-items:center;justify-content:space-between;
+    padding:10px 0;border-bottom:1px solid #f3f4f6;gap:8px;flex-wrap:wrap">
+    <div style="min-width:0">
+      <div style="font-size:13px;font-weight:600">${u.nom || '—'} <span style="font-weight:400;color:var(--text-2)">· ${u.lot || '—'}</span></div>
+      <div style="font-size:11.5px;color:var(--text-3)">${u.email}</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
+      <span class="badge ${roleBadge}">${roleLabel}</span>
+      ${actions}
+    </div>
+  </div>`;
+}
+
+function setUserRole(uid, role) {
+  _fbDB.ref('copro/users/' + uid + '/role').set(role)
+    .then(function() {
+      showToast('✅ Accès accordé');
+      loadUsersForAdmin();
+    });
+}
+
+function deleteUser(uid) {
+  if (!confirm('Supprimer cet utilisateur ?')) return;
+  _fbDB.ref('copro/users/' + uid).remove()
+    .then(function() {
+      showToast('✅ Utilisateur supprimé');
+      loadUsersForAdmin();
+    });
+}
+
+// ── Vérification des demandes en attente au chargement ──────────
+function checkPendingBadge() {
+  if (_currentUserRole !== 'admin') return;
+  _fbDB.ref('copro/users').once('value').then(function(snap) {
+    const users   = snap.val() || {};
+    const pending = Object.values(users).filter(u => u.role === 'pending').length;
+    const badge   = document.getElementById('pendingBadge');
+    if (badge) badge.style.display = pending > 0 ? 'inline' : 'none';
+  });
+}
+
+
+
 // ── Connexion utilisateur ─────────────────────────────────────────
+function doLogout() {
+  if (!confirm('Se déconnecter ?')) return;
+  _fbAuth.signOut().then(function() {
+    _currentUserRole = null;
+    _currentUserData = null;
+    const overlay = document.getElementById('setupOverlay');
+    if (overlay) overlay.style.display = 'flex';
+    showLoginPanel();
+    document.getElementById('loginEmail').value = '';
+    document.getElementById('loginPassword').value = '';
+    document.getElementById('loginError').style.display = 'none';
+    document.getElementById('loginBtn').textContent = 'Se connecter';
+    document.getElementById('loginBtn').disabled = false;
+  });
+}
+
 function doLogin() {
   const email    = document.getElementById('loginEmail').value.trim();
   const password = document.getElementById('loginPassword').value;
@@ -4915,14 +5261,14 @@ function _showLoginError(msg) {
 // ── Observer d'état auth — point d'entrée principal ──────────────
 _fbAuth.onAuthStateChanged(function(user) {
   if (user) {
-    // Connecté → charger les données
-    loadFromFirebase();
+    loadUserRole(user.uid).then(function(role) {
+      if (role) loadFromFirebase(role);
+    });
   }
-  // Non connecté → l'overlay de login est déjà visible au démarrage
 });
 
 // ── Chargement des données depuis Firebase ───────────────────────
-function loadFromFirebase() {
+function loadFromFirebase(role) {
   _fbDB.ref('copro/data').once('value')
     .then(function(snapshot) {
       const d = snapshot.val();
@@ -4930,13 +5276,13 @@ function loadFromFirebase() {
         _applyData(d);
         showToast('✅ Données chargées depuis Firebase');
       } else {
-        // Première utilisation : importer les données locales du JSON
         showToast('📁 Premier accès — prêt pour la première sauvegarde ☁️');
       }
-      // Masquer l'overlay et lancer l'app
       const overlay = document.getElementById('setupOverlay');
       if (overlay) overlay.style.display = 'none';
       syncCreditCats(); buildYearSelector(); updateTxCount(); renderDashboard();
+      applyRoleUI(role || _currentUserRole);
+      checkPendingBadge();
     })
     .catch(function(err) {
       console.error('Firebase load error:', err);
