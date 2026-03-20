@@ -5256,6 +5256,7 @@ function loadUsersForAdmin() {
 }
 
 function _userRow(uid, u) {
+  const isSelf    = (_fbAuth.currentUser && _fbAuth.currentUser.uid === uid);
   const roleLabel = {admin:'Admin', reader:'Lecture', pending:'En attente', blocked:'Bloqué'}[u.role] || u.role;
   const roleBadge = {
     admin:   'badge-blue',
@@ -5265,19 +5266,35 @@ function _userRow(uid, u) {
   }[u.role] || 'badge-gray';
 
   let actions = '';
-  if (u.role === 'pending') {
-    actions = `<button class="btn btn-sm" style="background:#16a34a;color:#fff;border:none"
+
+  if (isSelf) {
+    actions = '<span style="font-size:11px;color:var(--text-3)">Votre compte</span>';
+  } else if (u.role === 'pending') {
+    actions = `
+      <button class="btn btn-sm" style="background:#16a34a;color:#fff;border:none"
         onclick="setUserRole('${uid}','reader')">✓ Valider</button>
-       <button class="btn btn-outline btn-sm" style="color:#dc2626;margin-left:4px"
-        onclick="deleteUser('${uid}')">✕ Refuser</button>`;
-  } else if (u.role === 'blocked') {
-    actions = `<button class="btn btn-outline btn-sm" style="color:#16a34a"
-        onclick="setUserRole('${uid}','reader')">↺ Réactiver</button>`;
+      <button class="btn btn-outline btn-sm" style="color:#dc2626;margin-left:4px"
+        onclick="confirmDeleteUser('${uid}','${u.nom||u.email}')">✕ Refuser</button>`;
   } else if (u.role === 'reader') {
-    actions = `<button class="btn btn-outline btn-sm" style="color:#dc2626"
-        onclick="deleteUser('${uid}')">Bloquer</button>`;
+    actions = `
+      <button class="btn btn-outline btn-sm" style="color:#2563eb"
+        onclick="setUserRole('${uid}','admin')" title="Promouvoir en administrateur">↑ Admin</button>
+      <button class="btn btn-outline btn-sm" style="color:#d97706;margin-left:4px"
+        onclick="setUserRole('${uid}','blocked')" title="Bloquer l'accès">⊘ Bloquer</button>
+      <button class="btn btn-outline btn-sm" style="color:#dc2626;margin-left:4px"
+        onclick="confirmDeleteUser('${uid}','${u.nom||u.email}')" title="Supprimer de la base">🗑</button>`;
   } else if (u.role === 'admin') {
-    actions = '<span style="font-size:11px;color:var(--text-3)">Vous</span>';
+    actions = `
+      <button class="btn btn-outline btn-sm" style="color:#6b7280"
+        onclick="setUserRole('${uid}','reader')" title="Rétrograder en lecture seule">↓ Lecture</button>
+      <button class="btn btn-outline btn-sm" style="color:#dc2626;margin-left:4px"
+        onclick="confirmDeleteUser('${uid}','${u.nom||u.email}')" title="Supprimer de la base">🗑</button>`;
+  } else if (u.role === 'blocked') {
+    actions = `
+      <button class="btn btn-outline btn-sm" style="color:#16a34a"
+        onclick="setUserRole('${uid}','reader')">↺ Réactiver</button>
+      <button class="btn btn-outline btn-sm" style="color:#dc2626;margin-left:4px"
+        onclick="confirmDeleteUser('${uid}','${u.nom||u.email}')" title="Supprimer de la base">🗑</button>`;
   }
 
   return `<div style="display:flex;align-items:center;justify-content:space-between;
@@ -5286,25 +5303,20 @@ function _userRow(uid, u) {
       <div style="font-size:13px;font-weight:600">${u.nom || '—'} <span style="font-weight:400;color:var(--text-2)">· ${u.lot || '—'}</span></div>
       <div style="font-size:11.5px;color:var(--text-3)">${u.email}</div>
     </div>
-    <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
+    <div style="display:flex;align-items:center;gap:4px;flex-shrink:0;flex-wrap:wrap;justify-content:flex-end">
       <span class="badge ${roleBadge}">${roleLabel}</span>
       ${actions}
     </div>
   </div>`;
 }
 
-function setUserRole(uid, role) {
-  _fbDB.ref('copro/users/' + uid + '/role').set(role)
+function confirmDeleteUser(uid, nom) {
+  if (!confirm(`Supprimer "${nom}" de la base de données ?\n\n⚠️ Cette action supprime uniquement la fiche utilisateur. Pour empêcher définitivement toute reconnexion, supprimez aussi le compte dans Firebase Console → Authentication → Users.`)) return;
+  _fbDB.ref('copro/users/' + uid).remove()
     .then(function() {
-      const msgs = { reader: '✅ Accès accordé', blocked: '🚫 Utilisateur bloqué', pending: '⏳ Remis en attente' };
-      showToast(msgs[role] || '✅ Rôle mis à jour');
+      showToast('🗑 Fiche supprimée — pensez à supprimer le compte dans Firebase Auth si nécessaire');
       loadUsersForAdmin();
     });
-}
-
-function deleteUser(uid) {
-  if (!confirm('Bloquer cet utilisateur ? Il ne pourra plus se connecter. Vous pourrez le réactiver à tout moment.')) return;
-  setUserRole(uid, 'blocked');
 }
 
 // ── Vérification des demandes en attente au chargement ──────────
