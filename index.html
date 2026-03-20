@@ -248,24 +248,14 @@ body.sidebar-open #sidebarOverlay { display: block; }
 .scroll-wrap {
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
-  position: relative;
 }
-.scroll-wrap::after {
-  content: '→ défiler';
-  position: sticky;
-  right: 0;
-  bottom: 0;
-  display: block;
+.scroll-hint {
   text-align: right;
   font-size: 10.5px;
   color: var(--text-3);
-  padding: 2px 4px;
+  padding: 3px 2px 0;
+  user-select: none;
   pointer-events: none;
-  opacity: 0;
-  transition: opacity .3s;
-}
-.scroll-wrap.is-scrollable::after {
-  opacity: 1;
 }
 
 
@@ -3481,10 +3471,16 @@ function buildBilanSelectors() {
 // ── Détection des tableaux scrollables ──────────────────────────
 function updateScrollIndicators() {
   document.querySelectorAll('.scroll-wrap, .table-wrap').forEach(function(el) {
-    if (el.scrollWidth > el.clientWidth + 4) {
-      el.classList.add('is-scrollable');
-    } else {
-      el.classList.remove('is-scrollable');
+    const isScrollable = el.scrollWidth > el.clientWidth + 4;
+    // Cherche un hint existant juste après
+    let hint = el.nextElementSibling;
+    if (hint && hint.classList.contains('scroll-hint')) {
+      hint.style.display = isScrollable ? 'block' : 'none';
+    } else if (isScrollable) {
+      hint = document.createElement('div');
+      hint.className = 'scroll-hint';
+      hint.textContent = '← défiler →';
+      el.parentNode.insertBefore(hint, el.nextSibling);
     }
   });
 }
