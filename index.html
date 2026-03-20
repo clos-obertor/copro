@@ -1289,7 +1289,7 @@ body.reader-mode #nav-parametres { display: none !important; }
         <div class="grid-3" id="sdeaKpis" style="margin-bottom:20px">
       <div class="kpi"><div class="kpi-label">Dernière période</div><div class="kpi-value" style="font-size:16px">2025 - 2nd Semestre</div></div>
       <div class="kpi"><div class="kpi-label">Consommation totale</div><div class="kpi-value">339 m³</div></div>
-      <div class="kpi"><div class="kpi-label">Plus gros consommateur</div><div class="kpi-value" style="font-size:16px">SCHOTT / SCHOTT KESSLER</div><div class="kpi-sub">78 m³</div></div></div>
+      <div class="kpi"><div class="kpi-label">Répartition par lot</div><div style="height:80px"><canvas id="sdeaPieChart"></canvas></div></div></div>
         <div class="card">
           <div class="card-title">Consommation en m³ par lot et par période</div>
           <div class="table-wrap"><table>
@@ -2984,11 +2984,31 @@ function renderSdeaReleves() {
   const lastWithConso = [...periods].reverse().find(p => SDEA_LOTS.some(l=>conso[p][l].conso!==null));
   if (lastWithConso) {
     const tot = SDEA_LOTS.reduce((s,l)=>s+(conso[lastWithConso][l].conso||0),0);
-    const maxL = SDEA_LOTS.reduce((a,b)=>(conso[lastWithConso][a].conso||0)>=(conso[lastWithConso][b].conso||0)?a:b);
     document.getElementById('sdeaKpis').innerHTML = `
       <div class="kpi"><div class="kpi-label">Dernière période</div><div class="kpi-value" style="font-size:16px">${lastWithConso}</div></div>
       <div class="kpi"><div class="kpi-label">Consommation totale</div><div class="kpi-value">${tot} m³</div></div>
-      <div class="kpi"><div class="kpi-label">Plus gros consommateur</div><div class="kpi-value" style="font-size:16px">${getCurrentOwner(maxL).nom}</div><div class="kpi-sub">${conso[lastWithConso][maxL].conso} m³</div></div>`;
+      <div class="kpi"><div class="kpi-label">Répartition par lot</div><div style="height:80px"><canvas id="sdeaPieChart"></canvas></div></div>`;
+
+    // Graphique circulaire
+    const pieData = SDEA_LOTS.map(l => conso[lastWithConso][l].conso || 0);
+    const pieLabels = SDEA_LOTS.map(l => `${l} · ${getCurrentOwner(l).nom} (${conso[lastWithConso][l].conso||0} m³)`);
+    const pieColors = ['#2563eb','#16a34a','#d97706','#dc2626','#7c3aed','#0891b2','#db2777','#65a30d'];
+    setTimeout(function() {
+      const ctx = document.getElementById('sdeaPieChart');
+      if (!ctx) return;
+      if (ctx._chartInstance) ctx._chartInstance.destroy();
+      ctx._chartInstance = new Chart(ctx, {
+        type: 'doughnut',
+        data: { labels: pieLabels, datasets: [{ data: pieData, backgroundColor: pieColors, borderWidth: 2 }] },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: { callbacks: { label: ctx => ' ' + ctx.label } }
+          }
+        }
+      });
+    }, 50);
   }
   const consoperiods = periods.slice(1);
   document.getElementById('sdeaConsoHead').innerHTML = '<th>Période</th>' +
