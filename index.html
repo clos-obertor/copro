@@ -1286,28 +1286,41 @@ body.reader-mode #nav-parametres { display: none !important; }
       </div>
       <!-- Relevés -->
       <div id="sdea-releves">
-        <div class="grid-3" id="sdeaKpis" style="margin-bottom:20px">
-      <div class="kpi"><div class="kpi-label">Dernière période</div><div class="kpi-value" style="font-size:16px">2025 - 2nd Semestre</div></div>
-      <div class="kpi"><div class="kpi-label">Consommation totale</div><div class="kpi-value">339 m³</div></div>
-      </div>
-      <!-- Répartition par lot -->
-      <div class="card" id="sdeaRepartitionCard" style="margin-bottom:20px;display:none">
-        <div class="card-title">Répartition de la consommation par lot — dernière période</div>
-        <div class="chart-wrap"><canvas id="sdeaPieChart"></canvas></div>
-      </div>
-        <div class="card">
-          <div class="card-title">Consommation en m³ par lot et par période</div>
-          <div class="table-wrap"><table>
-            <thead><tr id="sdeaConsoHead"><th>Période</th><th class="text-right">Lot 1<br><span style="font-size:10px;font-weight:400;color:var(--text-3)">BUCH</span></th><th class="text-right">Lot 2<br><span style="font-size:10px;font-weight:400;color:var(--text-3)">SCHAEFFER</span></th><th class="text-right">Lot 3<br><span style="font-size:10px;font-weight:400;color:var(--text-3)">CLIVET</span></th><th class="text-right">Lot 4<br><span style="font-size:10px;font-weight:400;color:var(--text-3)">HERZ</span></th><th class="text-right">Lot 5<br><span style="font-size:10px;font-weight:400;color:var(--text-3)">DIETRICH / PERRIN</span></th><th class="text-right">Lot 6<br><span style="font-size:10px;font-weight:400;color:var(--text-3)">KOPP</span></th><th class="text-right">Lot 7<br><span style="font-size:10px;font-weight:400;color:var(--text-3)">SCHOTT / SCHOTT KESSLER</span></th><th class="text-right">Lot 8<br><span style="font-size:10px;font-weight:400;color:var(--text-3)">KAUFFER</span></th><th class="text-right">Total</th></tr></thead>
-            <tbody id="sdeaConsoBody"><tr><td style="font-weight:600;font-size:12.5px;white-space:nowrap">2022 - 2nd Semestre</td><td class="text-right num" style="font-size:12.5px">49 m³</td><td class="text-right num" style="font-size:12.5px">12 m³</td><td class="text-right num" style="font-size:12.5px">39 m³</td><td class="text-right num" style="font-size:12.5px">48 m³</td><td class="text-right num" style="font-size:12.5px">43 m³</td><td class="text-right num" style="font-size:12.5px">74 m³</td><td class="text-right num" style="font-size:12.5px">72 m³</td><td class="text-right num" style="font-size:12.5px">29 m³</td><td class="text-right num" style="font-weight:700">366 m³</td></tr><tr><td style="font-weight:600;font-size:12.5px;white-space:nowrap">2023 - 1er Semestre</td><td class="text-right num" style="font-size:12.5px">54 m³</td><td class="text-right num" style="font-size:12.5px">13 m³</td><td class="text-right num" style="font-size:12.5px">45 m³</td><td class="text-right num" style="font-size:12.5px">41 m³</td><td class="text-right num" style="font-size:12.5px">52 m³</td><td class="text-right num" style="font-size:12.5px">82 m³</td><td class="text-right num" style="font-size:12.5px">72 m³</td><td class="text-right num" style="font-size:12.5px">32 m³</td><td class="text-right num" style="font-weight:700">391 m³</td></tr><tr><td style="font-weight:600;font-size:12.5px;white-space:nowrap">2023 - 2nd Semestre</td><td class="text-right num" style="font-size:12.5px">52 m³</td><td class="text-right num" style="font-size:12.5px">14 m³</td><td class="text-right num" style="font-size:12.5px">42 m³</td><td class="text-right num" style="font-size:12.5px">53 m³</td><td class="text-right num" style="font-size:12.5px">55 m³</td><td class="text-right num" style="font-size:12.5px">60 m³</td><td class="text-right num" style="font-size:12.5px">75 m³</td><td class="text-right num" style="font-size:12.5px">22 m³</td><td class="text-right num" style="font-weight:700">373 m³</td></tr><tr><td style="font-weight:600;font-size:12.5px;white-space:nowrap">2024 - 1er Semestre</td><td class="text-right num" style="font-size:12.5px">40 m³</td><td class="text-right num" style="font-size:12.5px">13 m³</td><td class="text-right num" style="font-size:12.5px">48 m³</td><td class="text-right num" style="font-size:12.5px">54 m³</td><td class="text-right num" style="font-size:12.5px">61 m³</td><td class="text-right num" style="font-size:12.5px">44 m³</td><td class="text-right num" style="font-size:12.5px">73 m³</td><td class="text-right num" style="font-size:12.5px">23 m³</td><td class="text-right num" style="font-weight:700">356 m³</td></tr><tr><td style="font-weight:600;font-size:12.5px;white-space:nowrap">2024 - 2nd Semestre</td><td class="text-right num" style="font-size:12.5px">30 m³</td><td class="text-right num" style="font-size:12.5px">15 m³</td><td class="text-right num" style="font-size:12.5px">46 m³</td><td class="text-right num" style="font-size:12.5px">57 m³</td><td class="text-right num" style="font-size:12.5px">52 m³</td><td class="text-right num" style="font-size:12.5px">42 m³</td><td class="text-right num" style="font-size:12.5px">74 m³</td><td class="text-right num" style="font-size:12.5px">24 m³</td><td class="text-right num" style="font-weight:700">340 m³</td></tr><tr><td style="font-weight:600;font-size:12.5px;white-space:nowrap">2025 - 1er Semestre</td><td class="text-right num" style="font-size:12.5px">32 m³</td><td class="text-right num" style="font-size:12.5px">20 m³</td><td class="text-right num" style="font-size:12.5px">44 m³</td><td class="text-right num" style="font-size:12.5px">51 m³</td><td class="text-right num" style="font-size:12.5px">55 m³</td><td class="text-right num" style="font-size:12.5px">41 m³</td><td class="text-right num" style="font-size:12.5px">74 m³</td><td class="text-right num" style="font-size:12.5px">22 m³</td><td class="text-right num" style="font-weight:700">339 m³</td></tr><tr><td style="font-weight:600;font-size:12.5px;white-space:nowrap">2025 - 2nd Semestre</td><td class="text-right num" style="font-size:12.5px">30 m³</td><td class="text-right num" style="font-size:12.5px">18 m³</td><td class="text-right num" style="font-size:12.5px">42 m³</td><td class="text-right num" style="font-size:12.5px">47 m³</td><td class="text-right num" style="font-size:12.5px">56 m³</td><td class="text-right num" style="font-size:12.5px">44 m³</td><td class="text-right num" style="font-size:12.5px">78 m³</td><td class="text-right num" style="font-size:12.5px">24 m³</td><td class="text-right num" style="font-weight:700">339 m³</td></tr></tbody>
-          </table></div>
+        <!-- Ligne 1 : sélecteur période + KPIs -->
+        <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:20px">
+          <div style="display:flex;align-items:center;gap:8px;flex:1;min-width:200px">
+            <label style="font-size:12px;font-weight:600;color:var(--text-2);text-transform:uppercase;letter-spacing:.4px;white-space:nowrap;margin-bottom:0">Période</label>
+            <select id="sdeaPeriodeSel" onchange="renderSdeaReleves()" style="flex:1;padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;font-family:inherit"></select>
+          </div>
+          <div class="kpi" style="flex:1;min-width:140px">
+            <div class="kpi-label">Consommation totale</div>
+            <div class="kpi-value" id="sdeaKpiConsoVal">—</div>
+          </div>
+          <div class="kpi" style="flex:1;min-width:140px">
+            <div class="kpi-label">Facture associée</div>
+            <div class="kpi-value" id="sdeaKpiFactureVal" style="font-size:16px">—</div>
+            <div class="kpi-sub" id="sdeaKpiFactureSub"></div>
+          </div>
         </div>
-        <div class="card" style="margin-top:16px">
-          <div class="card-title">Index des compteurs (relevés bruts)</div>
-          <div class="table-wrap"><table>
-            <thead><tr id="sdeaRawHead"><th>Période</th><th class="text-right">Lot 1</th><th class="text-right">Lot 2</th><th class="text-right">Lot 3</th><th class="text-right">Lot 4</th><th class="text-right">Lot 5</th><th class="text-right">Lot 6</th><th class="text-right">Lot 7</th><th class="text-right">Lot 8</th><th></th></tr></thead>
-            <tbody id="sdeaRawBody"><tr><td style="font-weight:600;font-size:12.5px;white-space:nowrap">2022 - 1er Semestre</td><td class="text-right num" style="font-size:12.5px">1 686</td><td class="text-right num" style="font-size:12.5px">197</td><td class="text-right num" style="font-size:12.5px">1 930</td><td class="text-right num" style="font-size:12.5px">1 708</td><td class="text-right num" style="font-size:12.5px">1 715</td><td class="text-right num" style="font-size:12.5px">2 469</td><td class="text-right num" style="font-size:12.5px">2 520</td><td class="text-right num" style="font-size:12.5px">1 818</td><td></td></tr><tr><td style="font-weight:600;font-size:12.5px;white-space:nowrap">2022 - 2nd Semestre</td><td class="text-right num" style="font-size:12.5px">1 735</td><td class="text-right num" style="font-size:12.5px">209</td><td class="text-right num" style="font-size:12.5px">1 969</td><td class="text-right num" style="font-size:12.5px">1 756</td><td class="text-right num" style="font-size:12.5px">1 758</td><td class="text-right num" style="font-size:12.5px">2 543</td><td class="text-right num" style="font-size:12.5px">2 592</td><td class="text-right num" style="font-size:12.5px">1 847</td><td></td></tr><tr><td style="font-weight:600;font-size:12.5px;white-space:nowrap">2023 - 1er Semestre</td><td class="text-right num" style="font-size:12.5px">1 789</td><td class="text-right num" style="font-size:12.5px">222</td><td class="text-right num" style="font-size:12.5px">2 014</td><td class="text-right num" style="font-size:12.5px">1 797</td><td class="text-right num" style="font-size:12.5px">1 810</td><td class="text-right num" style="font-size:12.5px">2 625</td><td class="text-right num" style="font-size:12.5px">2 664</td><td class="text-right num" style="font-size:12.5px">1 879</td><td></td></tr><tr><td style="font-weight:600;font-size:12.5px;white-space:nowrap">2023 - 2nd Semestre</td><td class="text-right num" style="font-size:12.5px">1 841</td><td class="text-right num" style="font-size:12.5px">236</td><td class="text-right num" style="font-size:12.5px">2 056</td><td class="text-right num" style="font-size:12.5px">1 850</td><td class="text-right num" style="font-size:12.5px">1 865</td><td class="text-right num" style="font-size:12.5px">2 685</td><td class="text-right num" style="font-size:12.5px">2 739</td><td class="text-right num" style="font-size:12.5px">1 901</td><td></td></tr><tr><td style="font-weight:600;font-size:12.5px;white-space:nowrap">2024 - 1er Semestre</td><td class="text-right num" style="font-size:12.5px">1 881</td><td class="text-right num" style="font-size:12.5px">249</td><td class="text-right num" style="font-size:12.5px">2 104</td><td class="text-right num" style="font-size:12.5px">1 904</td><td class="text-right num" style="font-size:12.5px">1 926</td><td class="text-right num" style="font-size:12.5px">2 729</td><td class="text-right num" style="font-size:12.5px">2 812</td><td class="text-right num" style="font-size:12.5px">1 924</td><td></td></tr><tr><td style="font-weight:600;font-size:12.5px;white-space:nowrap">2024 - 2nd Semestre</td><td class="text-right num" style="font-size:12.5px">1 911</td><td class="text-right num" style="font-size:12.5px">264</td><td class="text-right num" style="font-size:12.5px">2 150</td><td class="text-right num" style="font-size:12.5px">1 961</td><td class="text-right num" style="font-size:12.5px">1 978</td><td class="text-right num" style="font-size:12.5px">2 771</td><td class="text-right num" style="font-size:12.5px">2 886</td><td class="text-right num" style="font-size:12.5px">1 948</td><td></td></tr><tr><td style="font-weight:600;font-size:12.5px;white-space:nowrap">2025 - 1er Semestre</td><td class="text-right num" style="font-size:12.5px">1 943</td><td class="text-right num" style="font-size:12.5px">284</td><td class="text-right num" style="font-size:12.5px">2 194</td><td class="text-right num" style="font-size:12.5px">2 012</td><td class="text-right num" style="font-size:12.5px">2 033</td><td class="text-right num" style="font-size:12.5px">2 812</td><td class="text-right num" style="font-size:12.5px">2 960</td><td class="text-right num" style="font-size:12.5px">1 970</td><td></td></tr><tr><td style="font-weight:600;font-size:12.5px;white-space:nowrap">2025 - 2nd Semestre</td><td class="text-right num" style="font-size:12.5px">1 973</td><td class="text-right num" style="font-size:12.5px">302</td><td class="text-right num" style="font-size:12.5px">2 236</td><td class="text-right num" style="font-size:12.5px">2 059</td><td class="text-right num" style="font-size:12.5px">2 089</td><td class="text-right num" style="font-size:12.5px">2 856</td><td class="text-right num" style="font-size:12.5px">3 038</td><td class="text-right num" style="font-size:12.5px">1 994</td><td></td></tr></tbody>
-          </table></div>
+        <!-- Graphique en barres -->
+        <div class="card" style="margin-bottom:20px">
+          <div class="card-title">Répartition de la consommation par lot</div>
+          <div class="chart-wrap"><canvas id="sdeaBarChart"></canvas></div>
+        </div>
+        <!-- Tableau par lot -->
+        <div class="card">
+          <div class="card-title">Détail par lot</div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr>
+                <th>Lot</th><th>Propriétaire</th>
+                <th class="text-right">Index relevé</th>
+                <th class="text-right">Conso (m³)</th>
+                <th class="text-right">Part facture</th>
+              </tr></thead>
+              <tbody id="sdeaDetailBody"></tbody>
+            </table>
+          </div>
         </div>
       </div>
       <!-- Factures -->
@@ -2984,69 +2997,100 @@ function sdeaTab(tab) {
 function renderSDEA() { sdeaTab(activeSdeaTab); }
 
 function renderSdeaReleves() {
-  const conso = computeConsumption();
-  const periods = getAllPeriods();
-  const lastWithConso = [...periods].reverse().find(p => SDEA_LOTS.some(l=>conso[p][l].conso!==null));
-  if (lastWithConso) {
-    const tot = SDEA_LOTS.reduce((s,l)=>s+(conso[lastWithConso][l].conso||0),0);
-    document.getElementById('sdeaKpis').innerHTML = `
-      <div class="kpi"><div class="kpi-label">Dernière période</div><div class="kpi-value" style="font-size:16px">${lastWithConso}</div></div>
-      <div class="kpi"><div class="kpi-label">Consommation totale</div><div class="kpi-value">${tot} m³</div></div>`;
-
-    // Graphique répartition — carte séparée sous les KPIs
-    const pieData   = SDEA_LOTS.map(l => conso[lastWithConso][l].conso || 0);
-    const pieLabels = SDEA_LOTS.map(l => `${getCurrentOwner(l).nom} (${conso[lastWithConso][l].conso||0} m³)`);
-    const pieColors = ['#2563eb','#16a34a','#d97706','#7c3aed','#dc2626','#0891b2','#db2777','#65a30d'];
-
-    const chartCard = document.getElementById('sdeaRepartitionCard');
-    if (chartCard) {
-      chartCard.style.display = 'block';
-      setTimeout(function() {
-        const ctx = document.getElementById('sdeaPieChart');
-        if (!ctx) return;
-        if (ctx._chartInstance) ctx._chartInstance.destroy();
-        ctx._chartInstance = new Chart(ctx, {
-          type: 'doughnut',
-          data: { labels: pieLabels, datasets: [{ data: pieData, backgroundColor: pieColors, borderWidth: 0 }] },
-          options: {
-            responsive: true, maintainAspectRatio: false,
-            plugins: {
-              legend: {
-                position: window.innerWidth <= 900 ? 'bottom' : 'right',
-                labels: { font: { size: 11 }, boxWidth: 10 }
-              }
-            }
-          }
-        });
-      }, 50);
-    }
-  }
-  const consoperiods = periods.slice(1);
-  document.getElementById('sdeaConsoHead').innerHTML = '<th>Période</th>' +
-    SDEA_LOTS.map(l=>`<th class="text-right">${l}<br><span style="font-size:10px;font-weight:400;color:var(--text-3)">${getCurrentOwner(l).nom}</span></th>`).join('') +
-    '<th class="text-right">Total</th>';
-  document.getElementById('sdeaConsoBody').innerHTML = consoperiods.map(periode => {
-    const inv = sdeaInvoices.find(i=>i.periode===periode);
-    const cells = SDEA_LOTS.map(lot => {
-      const c = conso[periode][lot].conso;
-      return `<td class="text-right num" style="font-size:12.5px">${c!==null?c+' m³':'<span style="color:var(--text-3)">—</span>'}</td>`;
-    });
-    const tot = SDEA_LOTS.reduce((s,l)=>s+(conso[periode][l].conso||0),0);
-    const invBadge = inv?`<span class="badge badge-green" style="font-size:10px;margin-left:4px">${inv.montant.toFixed(2)} €</span>`:'';
-    return `<tr><td style="font-weight:600;font-size:12.5px;white-space:nowrap">${periode}${invBadge}</td>${cells.join('')}<td class="text-right num" style="font-weight:700">${tot} m³</td></tr>`;
-  }).join('');
+  const conso   = computeConsumption();
+  const periods = getAllPeriods().slice(1); // exclut la première (pas de conso calculable)
   const allData = getAllSdeaReadings();
-  document.getElementById('sdeaRawHead').innerHTML = '<th>Période</th>' +
-    SDEA_LOTS.map(l=>`<th class="text-right">${l}</th>`).join('') + '<th></th>';
-  document.getElementById('sdeaRawBody').innerHTML = periods.map(periode => {
-    const cells = SDEA_LOTS.map(lot => {
-      const e = allData.find(d=>d.periode===periode&&d.lot===lot);
-      const isC = sdeaReadings.find(r=>r.periode===periode&&r.lot===lot);
-      return `<td class="text-right num" style="font-size:12.5px${isC?';color:var(--accent)':''}">${e?e.releve.toLocaleString('fr-FR'):'—'}</td>`;
+  const COLORS  = ['#2563eb','#16a34a','#d97706','#7c3aed','#dc2626','#0891b2','#db2777','#65a30d'];
+
+  // ── Remplir le sélecteur de période ──────────────────────────
+  const sel = document.getElementById('sdeaPeriodeSel');
+  const curPeriode = sel.value || ([...periods].reverse().find(p => SDEA_LOTS.some(l=>conso[p][l].conso!==null)) || periods[periods.length-1]);
+  sel.innerHTML = [...periods].reverse().map(p =>
+    `<option value="${p}" ${p===curPeriode?'selected':''}>${p}</option>`
+  ).join('');
+  const periode = sel.value || curPeriode;
+
+  // ── KPIs ─────────────────────────────────────────────────────
+  const data = conso[periode] || {};
+  const tot  = SDEA_LOTS.reduce((s,l)=>s+(data[l]?.conso||0),0);
+  const inv  = sdeaInvoices.find(i=>i.periode===periode);
+
+  document.getElementById('sdeaKpiConsoVal').textContent = tot ? tot + ' m³' : '—';
+
+  const factureEl  = document.getElementById('sdeaKpiFactureVal');
+  const factureSubEl = document.getElementById('sdeaKpiFactureSub');
+  if (inv) {
+    factureEl.textContent      = inv.montant.toFixed(2) + ' €';
+    factureEl.style.color      = 'var(--green)';
+    factureSubEl.textContent   = inv.date ? 'Facture du ' + fmtDate(inv.date) : '';
+  } else {
+    factureEl.textContent      = 'En attente';
+    factureEl.style.color      = 'var(--amber)';
+    factureSubEl.textContent   = 'Aucune facture saisie pour cette période';
+  }
+
+  // ── Graphique en barres ───────────────────────────────────────
+  const barLabels = SDEA_LOTS.map(l => getCurrentOwner(l).nom);
+  const barData   = SDEA_LOTS.map(l => data[l]?.conso || 0);
+
+  setTimeout(function() {
+    const ctx = document.getElementById('sdeaBarChart');
+    if (!ctx) return;
+    if (ctx._chartInstance) ctx._chartInstance.destroy();
+    ctx._chartInstance = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: barLabels,
+        datasets: [{
+          data: barData,
+          backgroundColor: COLORS,
+          borderWidth: 0,
+          borderRadius: 4
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          y: { beginAtZero: true, ticks: { callback: v => v + ' m³' } },
+          x: { ticks: { font: { size: 11 } } }
+        }
+      }
     });
-    const isCP = sdeaReadings.some(r=>r.periode===periode);
-    return `<tr><td style="font-weight:600;font-size:12.5px;white-space:nowrap">${periode}${isCP?'<span class="badge badge-blue" style="font-size:10px;margin-left:4px">saisi</span>':''}</td>${cells.join('')}<td>${isCP?`<button class="btn btn-outline btn-sm" style="color:var(--red);padding:2px 6px;font-size:11px" onclick="deleteSdeaPeriod('${periode}')">✕</button>`:''}</td></tr>`;
-  }).join('');
+  }, 50);
+
+  // ── Tableau détail par lot ────────────────────────────────────
+  document.getElementById('sdeaDetailBody').innerHTML = SDEA_LOTS.map((lot, i) => {
+    const d    = data[lot] || {};
+    const raw  = allData.find(r => r.periode===periode && r.lot===lot);
+    const cval = d.conso;
+    const part = (inv && tot > 0 && cval !== null) ? (cval / tot * inv.montant) : null;
+
+    const indexCell = raw
+      ? `<span class="num">${raw.releve.toLocaleString('fr-FR')}</span>`
+      : `<span style="color:var(--text-3)">—</span>`;
+    const consoCell = cval !== null
+      ? `<span class="num" style="color:${COLORS[i]};font-weight:700">${cval} m³</span>`
+      : `<span style="color:var(--text-3)">Relevé manquant</span>`;
+    const partCell  = part !== null
+      ? `<span class="num" style="font-weight:700;color:var(--accent)">${part.toFixed(2)} €</span>`
+      : inv
+        ? `<span style="color:var(--text-3)">—</span>`
+        : `<span class="badge badge-amber" style="font-size:11px">Facture en attente</span>`;
+
+    return `<tr>
+      <td style="font-size:12px;color:var(--text-2)">${lot}</td>
+      <td style="font-weight:600">${getCurrentOwner(lot).nom}</td>
+      <td class="text-right">${indexCell}</td>
+      <td class="text-right">${consoCell}</td>
+      <td class="text-right">${partCell}</td>
+    </tr>`;
+  }).join('') + (tot > 0 ? `
+    <tr style="background:#f9fafb;font-weight:700;border-top:2px solid var(--border)">
+      <td colspan="3">Total</td>
+      <td class="text-right num">${tot} m³</td>
+      <td class="text-right num" style="color:var(--accent)">${inv ? inv.montant.toFixed(2) + ' €' : '—'}</td>
+    </tr>` : '');
 }
 function renderSdeaFactures() {
   const periods = getAllPeriods().slice(1);
