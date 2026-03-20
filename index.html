@@ -3030,7 +3030,7 @@ function renderSdeaReleves() {
   }
 
   // ── Graphique en barres ───────────────────────────────────────
-  const barLabels = SDEA_LOTS.map(l => getCurrentOwner(l).nom);
+  const barLabels = SDEA_LOTS.map(l => l); // Lot 1, Lot 2, etc.
   const barData   = SDEA_LOTS.map(l => data[l]?.conso || 0);
 
   setTimeout(function() {
@@ -3070,7 +3070,7 @@ function renderSdeaReleves() {
       ? `<span class="num">${raw.releve.toLocaleString('fr-FR')}</span>`
       : `<span style="color:var(--text-3)">—</span>`;
     const consoCell = cval !== null
-      ? `<span class="num" style="color:${COLORS[i]};font-weight:700">${cval} m³</span>`
+      ? `<span class="num" style="color:${COLORS[i]}">${cval} m³</span>`
       : `<span style="color:var(--text-3)">Relevé manquant</span>`;
     const partCell  = part !== null
       ? `<span class="num" style="font-weight:700;color:var(--accent)">${part.toFixed(2)} €</span>`
@@ -3108,8 +3108,10 @@ function renderSdeaFactures() {
           <div style="display:flex;align-items:center;gap:8px">
             <span style="font-weight:600;font-size:13px">${inv.periode}</span>
             ${inv.debited
-              ? `<span class="badge badge-green" style="font-size:10px">✓ Prélevé le ${fmtDate(inv.debitDate)}</span>`
-              : `<span class="badge badge-amber" style="font-size:10px">⏳ En attente de prélèvement</span>`}
+              ? inv.debitMode === 'manual'
+                ? `<span class="badge badge-green" style="font-size:10px">✓ Saisie manuelle</span>`
+                : `<span class="badge badge-green" style="font-size:10px">✓ Débité le ${fmtDate(inv.debitDate)}</span>`
+              : `<span class="badge badge-amber" style="font-size:10px">⏳ En attente de validation</span>`}
           </div>
           <div style="font-size:11.5px;color:var(--text-2)">${inv.comment||''} · Facture du ${fmtDate(inv.date)}</div>
         </div>
@@ -3146,28 +3148,50 @@ function saveInvoice() {
   const date=document.getElementById('inv-date').value;
   const comment=document.getElementById('inv-comment').value.trim();
   if(!periode||!montant||!date){alert('Période, montant et date requis.');return;}
+  const _id = Date.now().toString(36)+Math.random().toString(36).slice(2);
   sdeaInvoices=sdeaInvoices.filter(i=>i.periode!==periode);
-  sdeaInvoices.push({periode,montant,date,comment,_id:Date.now().toString(36)+Math.random().toString(36).slice(2)});
+  sdeaInvoices.push({periode,montant,date,comment,debited:false,_id});
   document.getElementById('inv-montant').value='';
   document.getElementById('inv-comment').value='';
   document.getElementById('inv-preview').style.display='none';
   renderSdeaFactures();
+  showInvoiceDetail(_id);
 }
+
 function deleteInvoice(id) {
   if(!confirm('Supprimer cette facture ?'))return;
   sdeaInvoices=sdeaInvoices.filter(i=>i._id!==id);
   document.getElementById('invoiceDetailCard').style.display='none';
   renderSdeaFactures();
+  updateTxCount();
 }
+
 function showInvoiceDetail(id) {
   const inv=sdeaInvoices.find(i=>i._id===id); if(!inv)return;
   const conso=computeConsumption(); const data=conso[inv.periode]; if(!data)return;
   const tot=SDEA_LOTS.reduce((s,l)=>s+(data[l].conso||0),0);
-  const debitStatus = inv.debited
-    ? `<span class="badge badge-green" style="font-size:11px;margin-left:10px">✓ Prélevé le ${fmtDate(inv.debitDate)}</span>`
-    : `<button class="btn btn-primary btn-sm" style="margin-left:10px;font-size:11.5px" onclick="openDebitModal('${inv._id}')">💳 Enregistrer le prélèvement</button>`;
+
+  // Statut et boutons d'action selon l'état de la facture
+  let actionHtml = '';
+  if (inv.debited) {
+    const label = inv.debitMode === 'manual'
+      ? `✓ Saisie manuelle confirmée le ${fmtDate(inv.debitDate)}`
+      : `✓ Débit enregistré le ${fmtDate(inv.debitDate)}`;
+    actionHtml = `<span class="badge badge-green" style="font-size:11px;margin-left:10px">${label}</span>`;
+  } else {
+    actionHtml = `
+      <button class="btn btn-outline btn-sm" style="margin-left:8px;font-size:11.5px;color:var(--green)"
+        onclick="markInvoiceManual('${inv._id}')" title="La répartition a déjà été saisie manuellement dans les mouvements">
+        ✅ Déjà saisie manuellement
+      </button>
+      <button class="btn btn-primary btn-sm" style="margin-left:6px;font-size:11.5px"
+        onclick="openDebitModal('${inv._id}')" title="Créer les mouvements de répartition automatiquement">
+        💳 Enregistrer le débit
+      </button>`;
+  }
+
   document.getElementById('invoiceDetailTitle').innerHTML =
-    `Répartition — ${inv.periode} · ${inv.montant.toFixed(2)} €` + debitStatus;
+    `Répartition — ${inv.periode} · ${inv.montant.toFixed(2)} €` + actionHtml;
   document.getElementById('invoiceDetailCard').style.display='';
   document.getElementById('invoiceDetailBody').innerHTML=`<div class="table-wrap"><table>
     <thead><tr><th>Lot</th><th>Propriétaire</th><th class="text-right">Conso (m³)</th><th class="text-right">%</th><th class="text-right">Part facture</th></tr></thead>
@@ -3181,6 +3205,20 @@ function showInvoiceDetail(id) {
     }).join('')}
     <tr style="background:#f9fafb;font-weight:700"><td colspan="2">Total</td><td class="text-right num">${tot} m³</td><td class="text-right num">100 %</td><td class="text-right num" style="color:var(--accent)">${inv.montant.toFixed(2)} €</td></tr>
     </tbody></table></div>`;
+}
+
+// Marquer comme déjà saisie manuellement — aucun mouvement créé
+function markInvoiceManual(id) {
+  if (!confirm('Confirmer que cette facture a déjà été saisie manuellement dans les mouvements ?\n\nAucun mouvement ne sera créé automatiquement.')) return;
+  const inv = sdeaInvoices.find(i=>i._id===id);
+  if (!inv) return;
+  inv.debited    = true;
+  inv.debitMode  = 'manual';
+  inv.debitDate  = new Date().toISOString().slice(0,10);
+  renderSdeaFactures();
+  showInvoiceDetail(id);
+  updateTxCount();
+  showToast('✅ Facture marquée comme saisie manuellement');
 }
 function renderSdeaSaisie() { buildSaisieForm(); }
 function buildSaisieForm() {
@@ -3363,15 +3401,18 @@ function confirmDebit() {
 
   // Mark invoice as debited
   const invIdx = sdeaInvoices.findIndex(i => i._id === debitingInvoiceId);
+  const savedId = debitingInvoiceId;
   if (invIdx >= 0) {
-    sdeaInvoices[invIdx].debited = true;
+    sdeaInvoices[invIdx].debited   = true;
     sdeaInvoices[invIdx].debitDate = date;
+    sdeaInvoices[invIdx].debitMode = 'debit';
   }
 
   localStorage.setItem('copro_tx', JSON.stringify(customTx));
   invalidateCache(year);
   closeDebitModal();
   renderSdeaFactures();
+  showInvoiceDetail(savedId);
   updateTxCount();
   showToast(`✅ ${created} mouvement(s) SDEA créés pour ${moisLabel} ${year}`);
 }
