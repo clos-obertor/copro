@@ -435,6 +435,7 @@ body.sidebar-open #sidebarOverlay { display: block; }
     <div class="nav-item" onclick="showPage('copros')" id="nav-copros"><span class="icon">👥</span> Copropriétaires</div>
     <div class="nav-item" onclick="showPage('presta')" id="nav-presta"><span class="icon">🔧</span> Prestataires</div>
     <div class="nav-item" onclick="showPage('cessions')" id="nav-cessions"><span class="icon">🔄</span> Cessions de lots</div>
+    <div class="nav-item" onclick="showPage('infos')" id="nav-infos"><span class="icon">📋</span> Infos pratiques</div>
     <div class="nav-item" onclick="showPage('parametres')" id="nav-parametres"><span class="icon">⚙️</span> Paramètres <span id="pendingBadge" style="display:none;background:#dc2626;color:#fff;border-radius:999px;font-size:10px;font-weight:700;padding:1px 6px;margin-left:4px">!</span></div>
   </nav>
   <div class="sidebar-footer">
@@ -1887,6 +1888,36 @@ body.sidebar-open #sidebarOverlay { display: block; }
       </div>
     </div>
 
+    <!-- INFOS PRATIQUES -->
+    <div class="page" id="page-infos">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+        <div style="font-size:13px;color:var(--text-2)">Informations pratiques de la copropriété — visibles par tous les membres.</div>
+        <button class="btn btn-primary btn-sm" id="infos-add-btn" onclick="openInfoModal(null)">+ Ajouter une fiche</button>
+      </div>
+      <div id="infosList"></div>
+    </div>
+
+    <!-- MODAL FICHE INFO -->
+    <div class="modal-overlay" id="infoModalOverlay" onclick="if(event.target.id==='infoModalOverlay')closeInfoModal()">
+      <div class="modal" style="width:500px">
+        <h2 id="infoModalTitle">Nouvelle fiche</h2>
+        <div style="display:flex;flex-direction:column;gap:14px">
+          <div>
+            <label>Titre</label>
+            <input type="text" id="info-titre" placeholder="ex: Coordonnées bancaires, Numéro de registre…">
+          </div>
+          <div>
+            <label>Contenu</label>
+            <textarea id="info-contenu" rows="6" placeholder="Saisissez les informations…" style="width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:8px;font-size:13.5px;font-family:inherit;resize:vertical"></textarea>
+          </div>
+        </div>
+        <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:20px">
+          <button class="btn btn-outline" onclick="closeInfoModal()">Annuler</button>
+          <button class="btn btn-primary" onclick="saveInfo()">Enregistrer</button>
+        </div>
+      </div>
+    </div>
+
     <!-- PARAMÈTRES -->
     <div class="page" id="page-parametres">
 
@@ -2208,6 +2239,9 @@ function syncCreditCats() {
 const SAVED_PRESTATAIRES = /*SAVED_PRESTA_START*/[]/*SAVED_PRESTA_END*/;
 let prestataires = JSON.parse(JSON.stringify(SAVED_PRESTATAIRES));
 
+// Fiches infos pratiques
+let infosFiches = [];
+
 // Modifications des fiches copropriétaires (persisté dans le fichier)
 const SAVED_CONTACTS = /*SAVED_CONTACTS_START*/{}/*SAVED_CONTACTS_END*/;
 // contactOverrides = { 'Lot 1': { nom, prenom, tel:[], mail:[] }, ... }
@@ -2238,7 +2272,7 @@ function initCustomTx() {
   return merged;
 }
 let customTx = initCustomTx();
-let currentYear = 2026;
+let currentYear = new Date().getFullYear();
 let mvCurrentPage = 0;
 const PAGE_SIZE = 25;
 let mvFiltered = [];
@@ -4116,7 +4150,71 @@ function printBilanAnnuel() {
 
 
 
-// ===== CRÉDITS =====
+// ===== INFOS PRATIQUES =====
+let editingInfoId = null;
+
+function renderInfos() {
+  const el = document.getElementById('infosList');
+  if (!el) return;
+  if (!infosFiches.length) {
+    el.innerHTML = '<div style="color:var(--text-3);font-size:13px;padding:20px 0;text-align:center">Aucune fiche enregistrée. Cliquez sur "+ Ajouter une fiche" pour commencer.</div>';
+    return;
+  }
+  el.innerHTML = infosFiches.map(fiche => `
+    <div class="card" style="margin-bottom:14px">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px">
+        <div style="min-width:0;flex:1">
+          <div style="font-size:14px;font-weight:700;margin-bottom:8px">${fiche.titre}</div>
+          <div style="font-size:13px;color:var(--text-2);white-space:pre-wrap;line-height:1.6">${fiche.contenu}</div>
+        </div>
+        <div class="infos-admin-actions" style="display:flex;gap:6px;flex-shrink:0">
+          <button class="btn btn-outline btn-sm" onclick="openInfoModal('${fiche._id}')">✏️</button>
+          <button class="btn btn-outline btn-sm" style="color:var(--red)" onclick="deleteInfo('${fiche._id}')">✕</button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function openInfoModal(id) {
+  editingInfoId = id;
+  const fiche = id ? infosFiches.find(f => f._id === id) : null;
+  document.getElementById('infoModalTitle').textContent = fiche ? 'Modifier la fiche' : 'Nouvelle fiche';
+  document.getElementById('info-titre').value   = fiche ? fiche.titre   : '';
+  document.getElementById('info-contenu').value = fiche ? fiche.contenu : '';
+  document.getElementById('infoModalOverlay').classList.add('open');
+}
+
+function closeInfoModal() {
+  document.getElementById('infoModalOverlay').classList.remove('open');
+  editingInfoId = null;
+}
+
+function saveInfo() {
+  const titre   = document.getElementById('info-titre').value.trim();
+  const contenu = document.getElementById('info-contenu').value.trim();
+  if (!titre) { alert('Le titre est obligatoire.'); return; }
+
+  if (editingInfoId) {
+    const fiche = infosFiches.find(f => f._id === editingInfoId);
+    if (fiche) { fiche.titre = titre; fiche.contenu = contenu; }
+  } else {
+    infosFiches.push({
+      _id: Date.now().toString(36) + Math.random().toString(36).slice(2),
+      titre, contenu
+    });
+  }
+  closeInfoModal();
+  renderInfos();
+}
+
+function deleteInfo(id) {
+  if (!confirm('Supprimer cette fiche ?')) return;
+  infosFiches = infosFiches.filter(f => f._id !== id);
+  renderInfos();
+}
+
+
 let editingCreditId = null;
 
 function renderCredits() {
@@ -4164,6 +4262,8 @@ function renderCredits() {
         </div>
         <div style="display:flex;gap:6px;flex-shrink:0">
           <button class="btn btn-outline btn-sm" onclick="openCreditModal('${credit._id}')">✏️</button>
+          ${done && credit.actif !== false ? `<button class="btn btn-outline btn-sm" style="color:#16a34a" onclick="archiveCredit('${credit._id}')" title="Archiver ce crédit soldé">📦 Archiver</button>` : ''}
+          ${credit.actif === false ? `<button class="btn btn-outline btn-sm" style="color:#d97706" onclick="unarchiveCredit('${credit._id}')" title="Désarchiver">↺ Désarchiver</button>` : ''}
           <button class="btn btn-outline btn-sm" style="color:var(--red)" onclick="deleteCredit('${credit._id}')">✕</button>
         </div>
       </div>
@@ -4355,6 +4455,25 @@ function deleteCredit(id) {
   credits = credits.filter(c => c._id !== id);
   syncCreditCats();
   renderCredits();
+}
+
+function archiveCredit(id) {
+  const cr = credits.find(c => c._id === id);
+  if (!cr) return;
+  if (!confirm(`Archiver le crédit "${cr.nom}" ?\n\nIl n'apparaîtra plus dans le dashboard ni dans les catégories de saisie, mais restera visible dans l'onglet Crédits et dans l'historique.`)) return;
+  cr.actif = false;
+  syncCreditCats();
+  renderCredits();
+  showToast('📦 Crédit archivé');
+}
+
+function unarchiveCredit(id) {
+  const cr = credits.find(c => c._id === id);
+  if (!cr) return;
+  cr.actif = true;
+  syncCreditCats();
+  renderCredits();
+  showToast('↺ Crédit désarchivé');
 }
 
 // ── Auto-comment when a credit category is selected ──────────────
@@ -4709,9 +4828,10 @@ function closeSidebar() {
 }
 
 // ===== NAVIGATION =====
-const pages=['dashboard','bilan','mouvements','depenses','sdea','credits','copros','presta','cessions','parametres'];
+const pages=['dashboard','bilan','mouvements','depenses','sdea','credits','copros','presta','cessions','infos','parametres'];
 const titles={dashboard:'Tableau de bord',mouvements:'Journal des mouvements',copros:'Copropriétaires',presta:'Prestataires',
-  depenses:'Dépenses communes',sdea:'SDEA — Relevés eau',credits:'Crédits en cours',bilan:'Bilan',cessions:'Cessions de lots',parametres:'Paramètres'};
+  depenses:'Dépenses communes',sdea:'SDEA — Relevés eau',credits:'Crédits en cours',bilan:'Bilan',cessions:'Cessions de lots',
+  infos:'Informations pratiques',parametres:'Paramètres'};
 
 function showPage(p) {
   // Close sidebar on mobile when navigating
@@ -4734,6 +4854,7 @@ function showPage(p) {
   else if(p==='presta') renderPresta();
   else if(p==='parametres') renderParametres();
   else if(p==='credits') renderCredits();
+  else if(p==='infos') renderInfos();
 }
 // Construit dynamiquement la liste des années disponibles
 // = années dans HISTORICAL_DATA + customTx + sdeaReadings + sdeaInvoices
@@ -5192,6 +5313,9 @@ function applyRoleUI(role) {
       #sdea-factures .card:first-child { display: none !important; }
       button[onclick*="saveInvoice"],
       button[onclick*="deleteInvoice"] { display: none !important; }
+      /* Infos pratiques : masquer boutons admin pour les readers */
+      #infos-add-btn,
+      .infos-admin-actions { display: none !important; }
       /* Cessions : masquer le formulaire d'enregistrement */
       #page-cessions .grid-2 > .card:first-child { display: none !important; }
     `;
@@ -5450,7 +5574,7 @@ function saveToFirebase() {
       mode_rep:t.mode_rep,compte:t.compte,categorie:t.categorie,commentaire:t.commentaire,
       comptabilite:t.comptabilite,lot:t.lot,mois:t.mois,moisAnnee:t.moisAnnee,annee:t.annee,
       prevue:t.prevue,_creditId:t._creditId||null,_custom:true,_id:t._id})),
-    lotSales, sdeaReadings, sdeaInvoices, prestataires, contactOverrides, appSettings, credits
+    lotSales, sdeaReadings, sdeaInvoices, prestataires, contactOverrides, appSettings, credits, infosFiches
   };
 
   const btn = document.getElementById('saveBtn');
@@ -5490,6 +5614,7 @@ function _applyData(d) {
   fill(lotSales, d.lotSales); fill(sdeaReadings, d.sdeaReadings);
   fill(sdeaInvoices, d.sdeaInvoices); fill(prestataires, d.prestataires);
   fill(credits, d.credits);
+  fill(infosFiches, d.infosFiches || []);
   if (d.contactOverrides) Object.assign(contactOverrides, d.contactOverrides);
   if (d.appSettings) Object.assign(appSettings, d.appSettings);
   if (typeof invalidateCache==='function') invalidateCache(2023);
