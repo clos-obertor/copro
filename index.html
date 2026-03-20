@@ -244,7 +244,31 @@ body.sidebar-open #sidebarOverlay { display: block; }
   }
 }
 
-/* ── Mode lecture seule (reader) ────────────────────────────── */
+/* ── Indicateur de scroll horizontal ───────────────────────── */
+.scroll-wrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  position: relative;
+}
+.scroll-wrap::after {
+  content: '→ défiler';
+  position: sticky;
+  right: 0;
+  bottom: 0;
+  display: block;
+  text-align: right;
+  font-size: 10.5px;
+  color: var(--text-3);
+  padding: 2px 4px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity .3s;
+}
+.scroll-wrap.is-scrollable::after {
+  opacity: 1;
+}
+
+
 body.reader-mode button[onclick*="editTx"],
 body.reader-mode button[onclick*="deleteTx"],
 body.reader-mode button[onclick*="openCreditModal"],
@@ -3454,6 +3478,17 @@ function buildBilanSelectors() {
   if (bmM && !bmM.value) bmM.value = MOIS_LIST[new Date().getMonth()];
 }
 
+// ── Détection des tableaux scrollables ──────────────────────────
+function updateScrollIndicators() {
+  document.querySelectorAll('.scroll-wrap, .table-wrap').forEach(function(el) {
+    if (el.scrollWidth > el.clientWidth + 4) {
+      el.classList.add('is-scrollable');
+    } else {
+      el.classList.remove('is-scrollable');
+    }
+  });
+}
+
 function renderBilan() {
   buildBilanSelectors();
   bilanTab(activeBilanTab);
@@ -3502,7 +3537,7 @@ function renderBilanMensuel() {
     <div class="grid-2">
       <div class="card">
         <div class="card-title">Versements — ${mois} ${annee}</div>
-        <table><thead><tr><th>Lot</th><th>Copropriétaire</th><th class="text-right">Montant</th><th class="text-right">Statut</th></tr></thead>
+        <div class="scroll-wrap"><table><thead><tr><th>Lot</th><th>Copropriétaire</th><th class="text-right">Montant</th><th class="text-right">Statut</th></tr></thead>
         <tbody>${Object.entries(LOTS_CONFIG).map(([lot,cfg])=>{
           const v = vbl[lot]||0;
           const owner = getCurrentOwner(lot);
@@ -3512,7 +3547,7 @@ function renderBilanMensuel() {
             <td class="text-right num ${v>0?'num-pos':''}">${v>0?fmt(v):'—'}</td>
             <td class="text-right">${v>0?'<span class="badge badge-green">✓ Reçu</span>':'<span class="badge badge-red">✗ Absent</span>'}</td>
           </tr>`;
-        }).join('')}</tbody></table>
+        }).join('')}</tbody></table></div>
       </div>
       <div class="card">
         <div class="card-title">Dépenses — ${mois} ${annee}</div>
@@ -3545,6 +3580,7 @@ function renderBilanMensuel() {
             </tr>`).join('')}
         </tbody></table></div>
     </div>`;
+  setTimeout(updateScrollIndicators, 100);
 }
 
 // ── Bilan annuel ──────────────────────────────────────────────────
@@ -5859,8 +5895,11 @@ document.addEventListener('DOMContentLoaded', function() {
   const pfEl = document.getElementById('param-fin');
   if (pdEl) pdEl.value = appSettings.exerciceDebut || '01/01';
   if (pfEl) pfEl.value = appSettings.exerciceFin   || '31/12';
-  // Le chargement des données est géré par Firebase onAuthStateChanged ci-dessus
-  // L'overlay de connexion reste visible jusqu'à une authentification réussie
+  // Observateur automatique — vérifie modifications et scrolls toutes les 3s
+  setInterval(function() {
+    updateTxCount();
+    updateScrollIndicators();
+  }, 3000);
 });
 
 // Alerte fermeture si modifications non sauvegardées
