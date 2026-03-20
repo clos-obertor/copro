@@ -5568,19 +5568,37 @@ function saveToFirebase() {
   const user = _fbAuth.currentUser;
   if (!user) { showToast('⚠️ Non connecté — impossible de sauvegarder'); return; }
 
-  const now = new Date();
-  const dataObj = {
-    _saved: now.toISOString(),
-    customTx: customTx.map(t=>({date:t.date,montant:t.montant,type:t.type,copro:t.copro,
-      mode_rep:t.mode_rep,compte:t.compte,categorie:t.categorie,commentaire:t.commentaire,
-      comptabilite:t.comptabilite,lot:t.lot,mois:t.mois,moisAnnee:t.moisAnnee,annee:t.annee,
-      prevue:t.prevue,_creditId:t._creditId||null,_custom:true,_id:t._id})),
-    lotSales, sdeaReadings, sdeaInvoices, prestataires, contactOverrides, appSettings, credits, infosFiches
-  };
-
   const btn = document.getElementById('saveBtn');
   btn.textContent = '☁️ Sauvegarde…';
-  btn.disabled    = true;
+  btn.disabled = true;
+
+  // Sérialise et désérialise pour éliminer tout undefined (non accepté par Firebase)
+  let dataObj;
+  try {
+    const now = new Date();
+    const raw = {
+      _saved: now.toISOString(),
+      customTx: customTx.map(t=>({date:t.date,montant:t.montant,type:t.type,copro:t.copro,
+        mode_rep:t.mode_rep||'',compte:t.compte,categorie:t.categorie,commentaire:t.commentaire||'',
+        comptabilite:t.comptabilite,lot:t.lot,mois:t.mois,moisAnnee:t.moisAnnee,annee:t.annee,
+        prevue:t.prevue||null,_creditId:t._creditId||null,_custom:true,_id:t._id})),
+      lotSales: lotSales || [],
+      sdeaReadings: sdeaReadings || [],
+      sdeaInvoices: sdeaInvoices || [],
+      prestataires: prestataires || [],
+      contactOverrides: contactOverrides || {},
+      appSettings: appSettings || {},
+      credits: credits || [],
+      infosFiches: infosFiches || []
+    };
+    // Passe par JSON pour éliminer les undefined
+    dataObj = JSON.parse(JSON.stringify(raw));
+  } catch(e) {
+    btn.disabled = false;
+    btn.textContent = '☁️ Sauvegarder';
+    showToast('❌ Erreur de préparation : ' + e.message);
+    return;
+  }
 
   _fbDB.ref('copro/data').set(dataObj)
     .then(function() {
@@ -5590,8 +5608,9 @@ function saveToFirebase() {
     })
     .catch(function(err) {
       btn.disabled = false;
+      btn.textContent = '☁️ Sauvegarder';
       console.error('Firebase save error:', err);
-      showToast('❌ Erreur de sauvegarde : ' + err.message);
+      showToast('❌ ' + (err.message || err.code || 'Erreur inconnue'));
     });
 }
 
