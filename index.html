@@ -3468,11 +3468,30 @@ function buildBilanSelectors() {
   if (bmM && !bmM.value) bmM.value = MOIS_LIST[new Date().getMonth()];
 }
 
-// ── Détection des tableaux scrollables ──────────────────────────
-function updateScrollIndicators() {
-  document.querySelectorAll('.scroll-wrap, .table-wrap').forEach(function(el) {
+// ── Tableaux scrollables — solution universelle ─────────────────
+// Un MutationObserver surveille tout le contenu de l'app.
+// Dès qu'un tableau apparaît ou change, il est automatiquement
+// rendu scrollable si nécessaire, avec l'indicateur "← défiler →".
+
+function _applyTableScroll() {
+  document.querySelectorAll('.content table, .content .table-wrap table').forEach(function(table) {
+    const parent = table.parentNode;
+
+    // Ne pas ré-envelopper si déjà dans un wrapper
+    if (parent.classList.contains('scroll-wrap')) return;
+    // Ne pas envelopper les tables dans les modales
+    if (parent.closest('.modal')) return;
+
+    // Envelopper la table dans un scroll-wrap
+    const wrapper = document.createElement('div');
+    wrapper.className = 'scroll-wrap';
+    parent.insertBefore(wrapper, table);
+    wrapper.appendChild(table);
+  });
+
+  // Mettre à jour les indicateurs
+  document.querySelectorAll('.scroll-wrap').forEach(function(el) {
     const isScrollable = el.scrollWidth > el.clientWidth + 4;
-    // Cherche un hint existant juste après
     let hint = el.nextElementSibling;
     if (hint && hint.classList.contains('scroll-hint')) {
       hint.style.display = isScrollable ? 'block' : 'none';
@@ -3484,6 +3503,24 @@ function updateScrollIndicators() {
     }
   });
 }
+
+// Lancer une première fois au chargement
+function updateScrollIndicators() { _applyTableScroll(); }
+
+// Observer les changements DOM dans le contenu de l'app
+(function _startObserver() {
+  const target = document.querySelector('.content');
+  if (!target) { setTimeout(_startObserver, 500); return; }
+
+  const observer = new MutationObserver(function() {
+    // Debounce léger pour ne pas surcharger
+    clearTimeout(_applyTableScroll._timer);
+    _applyTableScroll._timer = setTimeout(_applyTableScroll, 80);
+  });
+
+  observer.observe(target, { childList: true, subtree: true });
+  _applyTableScroll(); // premier passage
+})();
 
 function renderBilan() {
   buildBilanSelectors();
@@ -3576,7 +3613,6 @@ function renderBilanMensuel() {
             </tr>`).join('')}
         </tbody></table></div>
     </div>`;
-  setTimeout(updateScrollIndicators, 100);
 }
 
 // ── Bilan annuel ──────────────────────────────────────────────────
@@ -5891,11 +5927,8 @@ document.addEventListener('DOMContentLoaded', function() {
   const pfEl = document.getElementById('param-fin');
   if (pdEl) pdEl.value = appSettings.exerciceDebut || '01/01';
   if (pfEl) pfEl.value = appSettings.exerciceFin   || '31/12';
-  // Observateur automatique — vérifie modifications et scrolls toutes les 3s
-  setInterval(function() {
-    updateTxCount();
-    updateScrollIndicators();
-  }, 3000);
+  // Observateur automatique — vérifie les modifications non sauvegardées toutes les 3s
+  setInterval(updateTxCount, 3000);
 });
 
 // Alerte fermeture si modifications non sauvegardées
