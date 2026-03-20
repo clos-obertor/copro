@@ -4180,9 +4180,14 @@ function renderInfos() {
     el.innerHTML = '<div style="color:var(--text-3);font-size:13px;padding:20px 0;text-align:center">Aucune fiche enregistrée. Cliquez sur "+ Ajouter une fiche" pour commencer.</div>';
     return;
   }
+
+  const isAdmin = _currentUserRole === 'admin';
+
   el.innerHTML = infosFiches.map(fiche => `
-    <div class="card" style="margin-bottom:14px">
+    <div class="card info-card" data-id="${fiche._id}"
+      style="margin-bottom:14px;transition:opacity .15s;${isAdmin ? 'cursor:grab;' : ''}">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px">
+        ${isAdmin ? `<div style="color:var(--text-3);font-size:18px;padding-top:2px;cursor:grab;flex-shrink:0" title="Glisser pour réorganiser">⠿</div>` : ''}
         <div style="min-width:0;flex:1">
           <div style="font-size:14px;font-weight:700;margin-bottom:8px">${fiche.titre}</div>
           <div style="font-size:13px;color:var(--text-2);white-space:pre-wrap;line-height:1.6">${fiche.contenu}</div>
@@ -4194,6 +4199,62 @@ function renderInfos() {
       </div>
     </div>
   `).join('');
+
+  // Activer le drag & drop uniquement pour les admins
+  if (isAdmin) _initInfosDragDrop(el);
+}
+
+let _dragSrc = null;
+
+function _initInfosDragDrop(container) {
+  container.querySelectorAll('.info-card').forEach(card => {
+    card.draggable = true;
+
+    card.addEventListener('dragstart', function(e) {
+      _dragSrc = this;
+      e.dataTransfer.effectAllowed = 'move';
+      setTimeout(() => this.style.opacity = '0.4', 0);
+    });
+
+    card.addEventListener('dragend', function() {
+      this.style.opacity = '1';
+      container.querySelectorAll('.info-card').forEach(c => {
+        c.style.borderColor = '';
+        c.style.borderTop = '';
+      });
+    });
+
+    card.addEventListener('dragover', function(e) {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      container.querySelectorAll('.info-card').forEach(c => c.style.borderTop = '');
+      if (this !== _dragSrc) this.style.borderTop = '3px solid var(--accent)';
+    });
+
+    card.addEventListener('dragleave', function() {
+      this.style.borderTop = '';
+    });
+
+    card.addEventListener('drop', function(e) {
+      e.preventDefault();
+      if (_dragSrc === this) return;
+
+      // Récupère les IDs dans le nouvel ordre DOM
+      this.style.borderTop = '';
+      const srcId  = _dragSrc.dataset.id;
+      const destId = this.dataset.id;
+
+      const srcIdx  = infosFiches.findIndex(f => f._id === srcId);
+      const destIdx = infosFiches.findIndex(f => f._id === destId);
+
+      // Déplace l'élément dans le tableau
+      const [moved] = infosFiches.splice(srcIdx, 1);
+      infosFiches.splice(destIdx, 0, moved);
+
+      renderInfos();
+      updateTxCount();
+    });
+  });
 }
 
 function openInfoModal(id) {
