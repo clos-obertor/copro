@@ -5076,25 +5076,45 @@ function loadUserRole(uid) {
 
 // ── Adaptation de l'interface selon le rôle ─────────────────────
 function applyRoleUI(role) {
-  const isAdmin = role === 'admin';
+  const isAdmin  = role === 'admin';
   const isReader = role === 'reader';
 
-  // Reader : masquer tous les boutons d'écriture
   if (isReader) {
-    const writeEls = document.querySelectorAll(
-      '#saveBtn, .btn-primary[onclick*="openModal"], .btn-primary[onclick*="saveCredit"], ' +
-      '.btn-primary[onclick*="saveCession"], .btn-primary[onclick*="openEditPresta"], ' +
-      '.btn-primary[onclick*="saveExercice"], .btn-primary[onclick*="addCat"]'
-    );
-    writeEls.forEach(el => el.style.display = 'none');
-    // Masquer le bouton + Mouvement de la topbar
-    const mvBtn = document.querySelector('.btn-primary[onclick="openModal()"]');
-    if (mvBtn) mvBtn.style.display = 'none';
-    // Bandeau info
+    // ── Topbar : masquer Sauvegarder et + Mouvement ──────────────
+    const saveBtn = document.getElementById('saveBtn');
+    if (saveBtn) saveBtn.style.display = 'none';
+    document.querySelectorAll('.btn-primary[onclick="openModal()"], .btn-primary[onclick*="openModal"]')
+      .forEach(el => el.style.display = 'none');
+
+    // ── Sidebar : masquer Paramètres ─────────────────────────────
+    const navParam = document.getElementById('nav-parametres');
+    if (navParam) navParam.style.display = 'none';
+
+    // ── Mouvements : masquer ✏️ et ✕ sur chaque ligne ───────────
+    // Appliqué via CSS injecté (couvre aussi les lignes générées dynamiquement)
+    const style = document.createElement('style');
+    style.id = 'reader-css';
+    style.textContent = `
+      /* Mouvements : pas de modif ni suppression */
+      button[onclick*="editTx"],
+      button[onclick*="deleteTx"] { display: none !important; }
+      /* Crédits : pas de nouveau crédit ni édition */
+      button[onclick*="openCreditModal"] { display: none !important; }
+      /* Prestataires : pas d'ajout ni d'édition */
+      button[onclick*="openEditPresta"] { display: none !important; }
+      /* Copropriétaires : pas de modification de fiche */
+      button[onclick*="openEditContact"] { display: none !important; }
+      /* SDEA : masquer l'onglet saisie */
+      #sdea-tab-saisie { display: none !important; }
+      /* Cessions : masquer le formulaire d'enregistrement */
+      #page-cessions .grid-2 > .card:first-child { display: none !important; }
+    `;
+    document.head.appendChild(style);
+
     showToast('👁 Accès en lecture seule');
   }
 
-  // Admin uniquement : afficher section utilisateurs dans Paramètres
+  // ── Admin uniquement : section utilisateurs dans Paramètres ────
   if (isAdmin) {
     const card = document.getElementById('param-users-card');
     if (card) card.style.display = 'block';
