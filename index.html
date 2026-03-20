@@ -5319,6 +5319,23 @@ function confirmDeleteUser(uid, nom) {
     });
 }
 
+function setUserRole(uid, role) {
+  _fbDB.ref('copro/users/' + uid + '/role').set(role)
+    .then(function() {
+      const msgs = {
+        reader:  '✅ Accès lecture accordé',
+        admin:   '⭐ Promu administrateur',
+        blocked: '🚫 Accès bloqué',
+        pending: '⏳ Remis en attente'
+      };
+      showToast(msgs[role] || '✅ Rôle mis à jour');
+      loadUsersForAdmin();
+    })
+    .catch(function(err) {
+      showToast('❌ Erreur : ' + err.message);
+    });
+}
+
 // ── Vérification des demandes en attente au chargement ──────────
 function checkPendingBadge() {
   if (_currentUserRole !== 'admin') return;
