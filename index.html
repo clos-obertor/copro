@@ -5584,15 +5584,14 @@ function saveToFirebase() {
 
   _fbDB.ref('copro/data').set(dataObj)
     .then(function() {
+      btn.disabled = false;
       _afterSave(dataObj);
       showToast('☁️ Sauvegardé sur Firebase');
     })
     .catch(function(err) {
+      btn.disabled = false;
       console.error('Firebase save error:', err);
       showToast('❌ Erreur de sauvegarde : ' + err.message);
-    })
-    .finally(function() {
-      btn.disabled = false;
     });
 }
 
