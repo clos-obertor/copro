@@ -178,7 +178,6 @@ body.sidebar-open #sidebarOverlay { display: block; }
   .topbar { left: 0 !important; padding: 10px 20px !important; gap: 12px; }
   .hamburger { display: flex !important; }
   .page { padding: 20px 16px !important; }
-  .card { overflow: visible !important; }
 }
 
 /* ── Tablette large 900-1400px ──────────────────────────────── */
@@ -244,6 +243,26 @@ body.sidebar-open #sidebarOverlay { display: block; }
     grid-template-columns: repeat(2,1fr) !important;
   }
 }
+
+/* ── Mode lecture seule (reader) ────────────────────────────── */
+body.reader-mode button[onclick*="editTx"],
+body.reader-mode button[onclick*="deleteTx"],
+body.reader-mode button[onclick*="openCreditModal"],
+body.reader-mode button[onclick*="deleteCredit"],
+body.reader-mode button[onclick*="openEditPresta"],
+body.reader-mode button[onclick*="deletePresta"],
+body.reader-mode button[onclick*="openEditContact"],
+body.reader-mode button[onclick*="saveInvoice"],
+body.reader-mode button[onclick*="deleteInvoice"],
+body.reader-mode button[onclick*="openModal"],
+body.reader-mode #sdea-tab-saisie,
+body.reader-mode #infos-add-btn,
+body.reader-mode .infos-admin-actions,
+body.reader-mode #saveBtn,
+body.reader-mode .btn-logout-top { display: none !important; }
+body.reader-mode #sdea-factures .card:first-child { display: none !important; }
+body.reader-mode #page-cessions .grid-2 > .card:first-child { display: none !important; }
+body.reader-mode #nav-parametres { display: none !important; }
 
 </style>
 </head>
@@ -2241,6 +2260,7 @@ let prestataires = JSON.parse(JSON.stringify(SAVED_PRESTATAIRES));
 
 // Fiches infos pratiques
 let infosFiches = [];
+let _savedInfosFiches = '[]';
 
 // Modifications des fiches copropriétaires (persisté dans le fichier)
 const SAVED_CONTACTS = /*SAVED_CONTACTS_START*/{}/*SAVED_CONTACTS_END*/;
@@ -4206,14 +4226,12 @@ function saveInfo() {
   }
   closeInfoModal();
   renderInfos();
-  updateTxCount();
 }
 
 function deleteInfo(id) {
   if (!confirm('Supprimer cette fiche ?')) return;
   infosFiches = infosFiches.filter(f => f._id !== id);
   renderInfos();
-  updateTxCount();
 }
 
 
@@ -4466,7 +4484,6 @@ function archiveCredit(id) {
   cr.actif = false;
   syncCreditCats();
   renderCredits();
-  updateTxCount();
   showToast('📦 Crédit archivé');
 }
 
@@ -4476,7 +4493,6 @@ function unarchiveCredit(id) {
   cr.actif = true;
   syncCreditCats();
   renderCredits();
-  updateTxCount();
   showToast('↺ Crédit désarchivé');
 }
 
@@ -5286,49 +5302,12 @@ function applyRoleUI(role) {
   const isReader = role === 'reader';
 
   if (isReader) {
-    // ── Topbar : masquer Sauvegarder et + Mouvement ──────────────
-    const saveBtn = document.getElementById('saveBtn');
-    if (saveBtn) saveBtn.style.display = 'none';
-    document.querySelectorAll('.btn-primary[onclick="openModal()"], .btn-primary[onclick*="openModal"]')
-      .forEach(el => el.style.display = 'none');
-
-    // ── Sidebar : masquer Paramètres ─────────────────────────────
-    const navParam = document.getElementById('nav-parametres');
-    if (navParam) navParam.style.display = 'none';
-
-    // ── Mouvements : masquer ✏️ et ✕ sur chaque ligne ───────────
-    // Appliqué via CSS injecté (couvre aussi les lignes générées dynamiquement)
-    const style = document.createElement('style');
-    style.id = 'reader-css';
-    style.textContent = `
-      /* Mouvements : pas de modif ni suppression */
-      button[onclick*="editTx"],
-      button[onclick*="deleteTx"] { display: none !important; }
-      /* Crédits : pas de nouveau crédit, édition ni suppression */
-      button[onclick*="openCreditModal"],
-      button[onclick*="deleteCredit"] { display: none !important; }
-      /* Prestataires : pas d'ajout, d'édition ni de suppression */
-      button[onclick*="openEditPresta"],
-      button[onclick*="deletePresta"] { display: none !important; }
-      /* Copropriétaires : pas de modification de fiche */
-      button[onclick*="openEditContact"] { display: none !important; }
-      /* SDEA : masquer l'onglet saisie et le formulaire de facture */
-      #sdea-tab-saisie { display: none !important; }
-      #sdea-factures .card:first-child { display: none !important; }
-      button[onclick*="saveInvoice"],
-      button[onclick*="deleteInvoice"] { display: none !important; }
-      /* Infos pratiques : masquer boutons admin pour les readers */
-      #infos-add-btn,
-      .infos-admin-actions { display: none !important; }
-      /* Cessions : masquer le formulaire d'enregistrement */
-      #page-cessions .grid-2 > .card:first-child { display: none !important; }
-    `;
-    document.head.appendChild(style);
-
+    // Applique toutes les restrictions via une classe CSS sur le body
+    document.body.classList.add('reader-mode');
     showToast('👁 Accès en lecture seule');
   }
 
-  // ── Admin uniquement : section utilisateurs dans Paramètres ────
+  // Admin uniquement : section utilisateurs dans Paramètres
   if (isAdmin) {
     const card = document.getElementById('param-users-card');
     if (card) card.style.display = 'block';
@@ -5620,24 +5599,17 @@ function saveToFirebase() {
 function _afterSave(dataObj) {
   SAVED_CUSTOM_TX.length=0;
   (dataObj.customTx||[]).forEach(t=>SAVED_CUSTOM_TX.push(t));
-  _savedStateSnapshot = _buildStateSnapshot();
+  _savedInfosFiches = JSON.stringify(infosFiches);
   localStorage.setItem('copro_tx', JSON.stringify(customTx));
   updateTxCount();
   showSaveConfirm();
 }
 
-// ── Snapshot de l'état sauvegardé ────────────────────────────────
-let _savedStateSnapshot = '';
-
-function _buildStateSnapshot() {
-  return JSON.stringify({
-    customTx, lotSales, sdeaReadings, sdeaInvoices,
-    prestataires, contactOverrides, appSettings, credits, infosFiches
-  });
-}
-
 function hasUnsavedChanges() {
-  return _buildStateSnapshot() !== _savedStateSnapshot;
+  const ids = new Set(SAVED_CUSTOM_TX.map(t=>t._id));
+  const txChanged = customTx.some(t=>!ids.has(t._id)) || customTx.length!==SAVED_CUSTOM_TX.length;
+  const infosChanged = JSON.stringify(infosFiches) !== _savedInfosFiches;
+  return txChanged || infosChanged;
 }
 
 function _applyData(d) {
@@ -5656,8 +5628,8 @@ function _applyData(d) {
   if (d.contactOverrides) Object.assign(contactOverrides, d.contactOverrides);
   if (d.appSettings) Object.assign(appSettings, d.appSettings);
   if (typeof invalidateCache==='function') invalidateCache(2023);
-  // Snapshot de référence — état propre au chargement
-  _savedStateSnapshot = _buildStateSnapshot();
+  // Snapshot de référence pour détecter les modifications
+  _savedInfosFiches = JSON.stringify(infosFiches);
 }
 
 
@@ -5683,10 +5655,12 @@ function updateTxCount() {
   const yr = customTx.filter(t=>t.annee===currentYear).length;
   const el = document.getElementById('txCount');
   if(el) el.textContent = total > 0 ? `${yr} mouv. ${currentYear} · ${total} total` : '';
+  // Indique si des données non sauvegardées existent
+  const saved = SAVED_CUSTOM_TX.length;
   const statusEl = document.getElementById('saveStatus');
   if(statusEl) {
-    if(hasUnsavedChanges()) {
-      statusEl.textContent = '⚠ Modifications non sauvegardées';
+    if(total > saved) {
+      statusEl.textContent = `⚠ ${total - saved} non sauvegardé(s)`;
       statusEl.style.color = 'rgba(251,191,36,.8)';
     } else {
       statusEl.textContent = total > 0 ? '✓ Fichier à jour' : '';
@@ -5706,9 +5680,8 @@ document.addEventListener('DOMContentLoaded', function() {
   const pfEl = document.getElementById('param-fin');
   if (pdEl) pdEl.value = appSettings.exerciceDebut || '01/01';
   if (pfEl) pfEl.value = appSettings.exerciceFin   || '31/12';
-  // Observateur automatique — vérifie les modifications toutes les 3s
-  setInterval(updateTxCount, 3000);
   // Le chargement des données est géré par Firebase onAuthStateChanged ci-dessus
+  // L'overlay de connexion reste visible jusqu'à une authentification réussie
 });
 
 // Alerte fermeture si modifications non sauvegardées
