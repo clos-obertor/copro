@@ -2241,6 +2241,7 @@ let prestataires = JSON.parse(JSON.stringify(SAVED_PRESTATAIRES));
 
 // Fiches infos pratiques
 let infosFiches = [];
+let _savedInfosFiches = '[]';
 
 // Modifications des fiches copropriétaires (persisté dans le fichier)
 const SAVED_CONTACTS = /*SAVED_CONTACTS_START*/{}/*SAVED_CONTACTS_END*/;
@@ -5598,6 +5599,7 @@ function saveToFirebase() {
 function _afterSave(dataObj) {
   SAVED_CUSTOM_TX.length=0;
   (dataObj.customTx||[]).forEach(t=>SAVED_CUSTOM_TX.push(t));
+  _savedInfosFiches = JSON.stringify(infosFiches);
   localStorage.setItem('copro_tx', JSON.stringify(customTx));
   updateTxCount();
   showSaveConfirm();
@@ -5605,19 +5607,29 @@ function _afterSave(dataObj) {
 
 function hasUnsavedChanges() {
   const ids = new Set(SAVED_CUSTOM_TX.map(t=>t._id));
-  return customTx.some(t=>!ids.has(t._id)) || customTx.length!==SAVED_CUSTOM_TX.length;
+  const txChanged = customTx.some(t=>!ids.has(t._id)) || customTx.length!==SAVED_CUSTOM_TX.length;
+  const infosChanged = JSON.stringify(infosFiches) !== _savedInfosFiches;
+  return txChanged || infosChanged;
 }
 
 function _applyData(d) {
   function fill(arr, src) { arr.length=0; (src||[]).forEach(x=>arr.push(x)); }
-  fill(customTx, d.customTx); fill(SAVED_CUSTOM_TX, d.customTx);
-  fill(lotSales, d.lotSales); fill(sdeaReadings, d.sdeaReadings);
-  fill(sdeaInvoices, d.sdeaInvoices); fill(prestataires, d.prestataires);
-  fill(credits, d.credits);
-  fill(infosFiches, d.infosFiches || []);
+  // Firebase convertit parfois les tableaux en objets — on normalise
+  function toArr(val) {
+    if (!val) return [];
+    if (Array.isArray(val)) return val;
+    return Object.values(val);
+  }
+  fill(customTx, toArr(d.customTx)); fill(SAVED_CUSTOM_TX, toArr(d.customTx));
+  fill(lotSales, toArr(d.lotSales)); fill(sdeaReadings, toArr(d.sdeaReadings));
+  fill(sdeaInvoices, toArr(d.sdeaInvoices)); fill(prestataires, toArr(d.prestataires));
+  fill(credits, toArr(d.credits));
+  fill(infosFiches, toArr(d.infosFiches));
   if (d.contactOverrides) Object.assign(contactOverrides, d.contactOverrides);
   if (d.appSettings) Object.assign(appSettings, d.appSettings);
   if (typeof invalidateCache==='function') invalidateCache(2023);
+  // Snapshot de référence pour détecter les modifications
+  _savedInfosFiches = JSON.stringify(infosFiches);
 }
 
 
